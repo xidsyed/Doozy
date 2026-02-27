@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.koin.compiler)
 }
 
 android {
@@ -64,6 +65,7 @@ dependencies {
     implementation(libs.ktor.client.android)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.androidx.material3)
     debugImplementation(libs.ktor.client.logging)
 
     // Paging
@@ -92,6 +94,10 @@ dependencies {
 
     // Fragments (if mixing fragment + compose or hybrid app)
     implementation(libs.androidx.fragment.ktx)
+
+    // Splash Screen
+    implementation(libs.androidx.core.splashscreen)
+
 
     // testing
     testImplementation(libs.junit)
