@@ -17,6 +17,9 @@ sealed interface Route : NavKey {
             data object Login : Authentication
 
             @Serializable
+            data class OtpVerification(val phoneNumber: String) : Authentication
+
+            @Serializable
             data object Registration : Authenticated
         }
 

@@ -11,7 +11,8 @@ import kotlinx.coroutines.launch
 
 data class LoginState(
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val phoneNumber: String = ""
 )
 
 class LoginViewModel(private val authManager: AuthManager) : ViewModel() {
@@ -19,22 +20,19 @@ class LoginViewModel(private val authManager: AuthManager) : ViewModel() {
     private val _state = MutableStateFlow(
         LoginState(
             isLoading = false,
-            error = null
+            error = null,
+            phoneNumber = ""
         )
     )
     val state = _state.asStateFlow()
 
-    fun login() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            if (!authManager.login()) {
-                _state.update { it.copy(isLoading = false, error = "Login failed") }
-            } else {
-                _state.update {
-                    it.copy(isLoading = false, error = null)
-                }
-            }
-        }
+    fun updatePhoneNumber(phone: String) {
+        _state.update { it.copy(phoneNumber = phone) }
     }
 
+    // We can keep login() if we wanted to do some validation, but we can also just let UI navigate.
+    fun validatePhone(): Boolean {
+        // basic validation
+        return _state.value.phoneNumber.length >= 10
+    }
 }

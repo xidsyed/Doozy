@@ -33,7 +33,28 @@ fun UnauthenticatedNav(modifier: Modifier, onboardingCompleted: Boolean) {
             entry<Route.Unauthenticated.Authentication.Login> {
                 val viewModel = koinViewModel<LoginViewModel>()
                 val state by viewModel.state.collectAsStateWithLifecycle()
-                LoginScreen(modifier, state, viewModel::login)
+                LoginScreen(
+                    modifier = modifier,
+                    state = state,
+                    onPhoneChange = viewModel::updatePhoneNumber,
+                    navigateToOtp = { phone ->
+                        if (viewModel.validatePhone()) {
+                            backstack.add(Route.Unauthenticated.Authentication.OtpVerification(phone))
+                        }
+                    }
+                )
+            }
+            entry<Route.Unauthenticated.Authentication.OtpVerification> {
+                val route = it as Route.Unauthenticated.Authentication.OtpVerification
+                val viewModel = koinViewModel<com.simple.doozy.feature.auth.screens.OtpViewModel>()
+                val state by viewModel.state.collectAsStateWithLifecycle()
+                com.simple.doozy.feature.auth.screens.OtpScreen(
+                    modifier = modifier,
+                    state = state,
+                    phoneNumber = route.phoneNumber,
+                    verify = viewModel::verifyOtp,
+                    onBack = { backstack.removeLastOrNull() }
+                )
             }
         }
     )
