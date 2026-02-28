@@ -98,6 +98,13 @@ dependencies {
     // Splash Screen
     implementation(libs.androidx.core.splashscreen)
 
+    // Kotlin Result
+    implementation(libs.kotlin.result)
+
+    // Icons
+    implementation(libs.androidx.compose.material.icons.core)
+
+
 
     // testing
     testImplementation(libs.junit)

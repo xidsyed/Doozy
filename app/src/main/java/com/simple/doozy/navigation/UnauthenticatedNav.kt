@@ -11,6 +11,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.simple.doozy.feature.auth.screens.LoginScreen
 import com.simple.doozy.feature.auth.screens.LoginViewModel
+import com.simple.doozy.feature.auth.screens.OtpScreen
+import com.simple.doozy.feature.auth.screens.OtpViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -45,14 +47,20 @@ fun UnauthenticatedNav(modifier: Modifier, onboardingCompleted: Boolean) {
                 )
             }
             entry<Route.Unauthenticated.Authentication.OtpVerification> {
-                val route = it as Route.Unauthenticated.Authentication.OtpVerification
-                val viewModel = koinViewModel<com.simple.doozy.feature.auth.screens.OtpViewModel>()
+                val viewModel = koinViewModel<OtpViewModel>()
                 val state by viewModel.state.collectAsStateWithLifecycle()
-                com.simple.doozy.feature.auth.screens.OtpScreen(
+
+                androidx.compose.runtime.LaunchedEffect(it.phoneNumber) {
+                    viewModel.initPhoneNumber(it.phoneNumber)
+                }
+
+                OtpScreen(
                     modifier = modifier,
                     state = state,
-                    phoneNumber = route.phoneNumber,
+                    phoneNumber = it.phoneNumber,
                     verify = viewModel::verifyOtp,
+                    resend = viewModel::resendOtp,
+                    onOtpChange = viewModel::updateOtp,
                     onBack = { backstack.removeLastOrNull() }
                 )
             }

@@ -24,6 +24,11 @@ class KotlinUnitTests {
         log(lazyValue)
         log(lazyValue)
     }
+
+    @Test
+    fun `kotlin results`() {
+        val e = Result.success("hello")
+    }
 }
 
 // OTHERS

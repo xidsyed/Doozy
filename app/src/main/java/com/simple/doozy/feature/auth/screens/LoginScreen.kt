@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simple.doozy.common.ui.defaultButtonColors
 import com.simple.doozy.ui.theme.DefaultRoundedShape
 
 @Composable
@@ -38,17 +39,6 @@ fun LoginScreen(
             modifier = Modifier.padding(bottom = 48.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.onBackground)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Logo", color = MaterialTheme.colorScheme.background)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Doozy",
                 style = MaterialTheme.typography.headlineLarge.copy(
@@ -137,11 +127,7 @@ fun LoginScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 enabled = state.phoneNumber.length == 10,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onBackground,
-                    contentColor = MaterialTheme.colorScheme.background,
-                    disabledContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
+                colors = defaultButtonColors()
             ) {
                 Text(
                     text = "Get Started",

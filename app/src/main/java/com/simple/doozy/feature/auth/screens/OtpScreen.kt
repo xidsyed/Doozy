@@ -1,12 +1,22 @@
 package com.simple.doozy.feature.auth.screens
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,13 +24,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.simple.doozy.common.ui.DotsLoadingIndicator
+import com.simple.doozy.common.ui.defaultButtonColors
 import kotlinx.coroutines.delay
+
+
 
 @Composable
 fun OtpScreen(
@@ -28,6 +41,8 @@ fun OtpScreen(
     state: OtpState,
     phoneNumber: String,
     verify: () -> Unit,
+    resend: () -> Unit,
+    onOtpChange: (String) -> Unit,
     onBack: () -> Unit
 ) {
     val last4 = if (phoneNumber.length >= 4) phoneNumber.takeLast(4) else phoneNumber
@@ -52,7 +67,11 @@ fun OtpScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Text("<", color = MaterialTheme.colorScheme.onBackground)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    contentDescription = "Back Icon"
+                )
             }
             Text(
                 text = "VERIFICATION",
@@ -81,7 +100,7 @@ fun OtpScreen(
                     .padding(8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Lock", color = MaterialTheme.colorScheme.background)
+                Icon(modifier = Modifier.size(24.dp), imageVector = Icons.Rounded.Lock, tint = MaterialTheme.colorScheme.background, contentDescription = "Lock Icon")
             }
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -108,7 +127,7 @@ fun OtpScreen(
             // OTP Input
             BasicTextField(
                 value = state.otpCode,
-                onValueChange = { /* handled by viewmodel directly in caller via state */ },
+                onValueChange = onOtpChange,
                 modifier = Modifier.focusRequester(focusRequester),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 decorationBox = {
@@ -153,7 +172,17 @@ fun OtpScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(40.dp))
+            if (state.error != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = state.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Resend
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -164,17 +193,31 @@ fun OtpScreen(
                 )
                 Text(
                     text = "Resend",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.clickable { /* no-op */ }
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = if (state.resendCountdown == 0 && !state.isSendingCode) MaterialTheme.colorScheme.onBackground
+                        else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                    ),
+                    modifier = Modifier.clickable(
+                        enabled = state.resendCountdown == 0 && !state.isSendingCode,
+                        onClick = resend
+                    )
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Resend available in 00:30",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
-            )
+            if (state.resendCountdown > 0) {
+                Text(
+                    text = "Resend available in 00:${state.resendCountdown.toString().padStart(2, '0')}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
+            } else {
+                Text(
+                    text = "You can resend the code now",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -186,22 +229,14 @@ fun OtpScreen(
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 enabled = state.otpCode.length == 6 && !state.isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.onBackground,
-                    contentColor = MaterialTheme.colorScheme.background,
-                    disabledContainerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
+                colors = defaultButtonColors()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
                     if (state.isLoading) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.background,
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
+                        DotsLoadingIndicator(modifier = Modifier.padding(horizontal = 16.dp))
                     } else {
                         Text(
                             text = "Verify",
@@ -211,7 +246,7 @@ fun OtpScreen(
                             )
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(">", color = MaterialTheme.colorScheme.background)
+                        Icon(modifier = Modifier.size(24.dp), imageVector = Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
                     }
                 }
             }

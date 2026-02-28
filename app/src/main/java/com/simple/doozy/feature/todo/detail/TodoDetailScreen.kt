@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.ui.theme.ScreenPaddingValues
-import com.simple.doozy.ui.util.AppPreview
+import com.simple.doozy.common.ui.util.AppPreview
 
 @Composable
 fun TodoDetailsScreen(modifier: Modifier, viewModel: TodoDetailViewModel) {
