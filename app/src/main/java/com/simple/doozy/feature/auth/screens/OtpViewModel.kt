@@ -1,5 +1,6 @@
 package com.simple.doozy.feature.auth.screens
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.onFailure
@@ -86,5 +87,10 @@ class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
                     }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("TAG", "onCleared")
     }
 }

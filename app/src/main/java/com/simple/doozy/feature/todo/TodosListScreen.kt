@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Star
@@ -31,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,9 +39,9 @@ import com.simple.doozy.ui.theme.PremiumGold
 import com.simple.doozy.ui.theme.ScreenPaddingValues
 
 @Composable
-fun TodosScreen(
+fun TodosListScreen(
     modifier: Modifier = Modifier,
-    viewModel: TodosViewModel,
+    viewModel: TodosListViewModel,
     navigateToTodoDetail: (String?) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

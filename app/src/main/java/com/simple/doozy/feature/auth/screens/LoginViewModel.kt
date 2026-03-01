@@ -1,5 +1,6 @@
 package com.simple.doozy.feature.auth.screens
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.simple.doozy.feature.auth.AuthManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,5 +32,10 @@ class LoginViewModel(private val authManager: AuthManager) : ViewModel() {
     fun validatePhone(): Boolean {
         // basic validation
         return _state.value.phoneNumber.length >= 10
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d("TAG", "onCleared")
     }
 }

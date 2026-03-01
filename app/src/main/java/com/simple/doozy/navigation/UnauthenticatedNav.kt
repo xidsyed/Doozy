@@ -13,16 +13,13 @@ import com.simple.doozy.feature.auth.screens.LoginScreen
 import com.simple.doozy.feature.auth.screens.LoginViewModel
 import com.simple.doozy.feature.auth.screens.OtpScreen
 import com.simple.doozy.feature.auth.screens.OtpViewModel
+import com.simple.doozy.navigation.route.Route.UnauthenticatedNav
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun UnauthenticatedNav(modifier: Modifier, onboardingCompleted: Boolean) {
+fun UnauthenticatedNav(modifier: Modifier) {
 
-    if (!onboardingCompleted) {
-        OnboardingNav(modifier)
-        return
-    }
-    val backstack = rememberNavBackStack(Route.Unauthenticated.Authentication.Login)
+    val backstack = rememberNavBackStack(UnauthenticatedNav.Authentication.Login)
 
     NavDisplay(
         entryDecorators = listOf(
@@ -32,7 +29,7 @@ fun UnauthenticatedNav(modifier: Modifier, onboardingCompleted: Boolean) {
         backStack = backstack,
         onBack = { backstack.removeLastOrNull() },
         entryProvider = entryProvider {
-            entry<Route.Unauthenticated.Authentication.Login> {
+            entry<UnauthenticatedNav.Authentication.Login> {
                 val viewModel = koinViewModel<LoginViewModel>()
                 val state by viewModel.state.collectAsStateWithLifecycle()
                 LoginScreen(
@@ -41,12 +38,12 @@ fun UnauthenticatedNav(modifier: Modifier, onboardingCompleted: Boolean) {
                     onPhoneChange = viewModel::updatePhoneNumber,
                     navigateToOtp = { phone ->
                         if (viewModel.validatePhone()) {
-                            backstack.add(Route.Unauthenticated.Authentication.OtpVerification(phone))
+                            backstack.add(UnauthenticatedNav.Authentication.OtpVerification(phone))
                         }
                     }
                 )
             }
-            entry<Route.Unauthenticated.Authentication.OtpVerification> {
+            entry<UnauthenticatedNav.Authentication.OtpVerification> {
                 val viewModel = koinViewModel<OtpViewModel>()
                 val state by viewModel.state.collectAsStateWithLifecycle()
 

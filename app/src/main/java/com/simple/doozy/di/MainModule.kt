@@ -26,5 +26,6 @@ val mainModule = module {
     includes(TodoModule)
     includes(authModule)
     includes(onboardingModule)
+    includes(com.simple.doozy.feature.profile.di.profileModule)
 
 }

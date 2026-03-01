@@ -14,7 +14,7 @@ data class User(
 
     data class Metadata(
         val subscribeToEmails: Boolean,
-        val isCatPerson: Boolean? = null
+        val gender: String? = null
     )
 
 
@@ -22,13 +22,13 @@ data class User(
         val MOCK = User(
             Id(
                 id = "1",
-                name = "John Doe",
-                avatar = "https://picsum.photos/id/64/300/300",
-                email = "janedoe@gmail.com",
+                name = "Alex Doe",
+                avatar = "https://lh3.googleusercontent.com/aida-public/AB6AXuB_W8KmEaJn-Z7AU6vzDA3KnlsZhDTlI2FRdYzu4MYCG87apARoxc5tQQ8FpNUWrIsy0M3_G_oBMJaxIhdfV7hto5I5iSYifzgCCd_r-bhd0lAOvFsLtf54goTWjvgAbNhJgpcFfW7gFSIg5eWRfOTdaRzJCd1ZwEd0BY_hK2qgfcpmxzU6FIRJdrqFWcIcWjlUfNaWmaQxhM_JHlm5UUMPVM6cXvKXAFNgwG_jWfvTVy4Ipnh_caEyfGZKwztUZkAdKMWbf1UiGMg",
+                email = "alex.doe@example.com",
             ),
             Metadata(
                 subscribeToEmails = true,
-                isCatPerson = true
+                gender = "Male"
             )
         )
     }
