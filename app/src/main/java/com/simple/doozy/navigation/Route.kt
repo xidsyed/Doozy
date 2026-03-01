@@ -28,10 +28,13 @@ sealed interface Route : NavKey {
 
     sealed interface Authenticated : Route {
         @Serializable
-        object Todos : Authenticated
+        sealed interface Todos : Authenticated {
+            @Serializable
+            data object TodosList : Todos
 
-        @Serializable
-        data class TodoDetail(val todoId: String) : Authenticated
+            @Serializable
+            data class TodoDetail(val todoId: String?) : Todos
+        }
 
         @Serializable
         data object Profile : Authenticated

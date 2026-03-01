@@ -1,6 +1,8 @@
 # Doozy Project
 
-This project is a work in progress. It is intended to be a minimal todo app with authentication, subscriptions, and analytics features planned.
+This project is a work in progress. It is intended to be a minimal todo app with authentication, subscriptions, and analytics features planned. 
+
+The flows will be mocked first. The real backends, auth, payments, analytics etc will be integrated later.
 
 ## Modern Android Tech Stack
 - Kotlin 2.3

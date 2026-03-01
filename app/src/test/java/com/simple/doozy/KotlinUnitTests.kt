@@ -35,8 +35,7 @@ class KotlinUnitTests {
 
 class Example {
     var p: String by Delegate()
-    var name: String by Delegates.observable("<no name>") {
-            prop, old, new ->
+    var name: String by Delegates.observable("<no name>") { prop, old, new ->
         println("$old -> $new")
     }
 }

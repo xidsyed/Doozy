@@ -9,9 +9,19 @@ import kotlinx.coroutines.flow.update
 class TodoRepository {
     private var _todos = MutableStateFlow(
         listOf(
-            Todo("1", "Buy milk", "", false),
-            Todo("2", "Walk the dog", "", true),
-            Todo("3", "Do the laundry", "", false)
+            Todo("1", "Buy milk", "2% milk", emptyList(), System.currentTimeMillis(), false),
+            Todo(
+                "2",
+                "Walk the dog",
+                "Around the park",
+                listOf(
+                    SubTask("s1", "Get leash", false),
+                    SubTask("s2", "Get bags", true)
+                ),
+                System.currentTimeMillis(),
+                true
+            ),
+            Todo("3", "Do the laundry", "Whites and colors", emptyList(), System.currentTimeMillis(), false)
         )
 
     );
@@ -32,6 +42,12 @@ class TodoRepository {
     }
 
     fun updateTodo(updateTodo: Todo) {
-        _todos.update { todos -> todos.map { todo -> if (todo.id == updateTodo.id) updateTodo else todo } }
+        _todos.update { todos ->
+            if (todos.any { it.id == updateTodo.id }) {
+                todos.map { todo -> if (todo.id == updateTodo.id) updateTodo else todo }
+            } else {
+                todos + updateTodo
+            }
+        }
     }
 }

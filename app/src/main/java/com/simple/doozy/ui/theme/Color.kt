@@ -91,3 +91,7 @@ val TertiaryFixed = Color(0xFFF3F3F3)
 val TertiaryFixedDim = Color(0xFFE5E5E5)
 val OnTertiaryFixed = Color(0xFF494949)
 val OnTertiaryFixedVariant = Color(0xFF666666)
+
+
+// CUSTOM COLORS
+val PremiumGold = Color(0xFFC5A059)
