@@ -27,12 +27,22 @@ fun AuthenticatedNav(modifier: Modifier) {
         onBack = { backstack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<AuthenticatedNav.HomeNav> {
-                HomeNav(modifier)
+                HomeNav(
+                    modifier = modifier,
+                    onNavigateToSubscribeFlow = { backstack.add(AuthenticatedNav.SubscribeNav) },
+                    onNavigateToActiveSubscriptionPage = { backstack.add(AuthenticatedNav.ActiveSubscriptionDetails) }
+                )
             }
 
             entry<AuthenticatedNav.SubscribeNav> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Subscription Flow")
+                    Text("Subscription Flow (SubscriptionPlans, Checkout)")
+                }
+            }
+
+            entry<AuthenticatedNav.ActiveSubscriptionDetails> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Active Subscription Details")
                 }
             }
 

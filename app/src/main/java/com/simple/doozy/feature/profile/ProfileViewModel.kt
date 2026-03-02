@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.auth.AuthManager
 import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.model.User
-import com.simple.doozy.feature.subscription.data.Subscription
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
+import com.simple.doozy.feature.subscription.data.SubscriptionState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 data class ProfileState(
     val user: User? = null,
-    val subscription: Subscription? = null,
+    val subscription: SubscriptionState = SubscriptionState.Checking,
     val isLoading: Boolean = true
 )
 
@@ -34,7 +34,7 @@ class ProfileViewModel(
                     is AuthState.Authenticated -> {
                         if (authState.id.id == User.MOCK.id.id) User.MOCK else User(
                             authState.id,
-                            User.Metadata(subscribeToEmails = true, gender = null)
+                            User.Metadata(subscribeToEmails = true)
                         )
                     }
 

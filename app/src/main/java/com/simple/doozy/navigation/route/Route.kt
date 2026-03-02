@@ -20,7 +20,6 @@ sealed interface Route : NavKey {
             @Serializable
             data object Registration : Route
         }
-
     }
 
     @Serializable
@@ -36,6 +35,7 @@ sealed interface Route : NavKey {
              * cleared when navigating between these two top-level destinations
              * */
 
+            @Serializable
             sealed interface BottomNavTab
 
             @Serializable
@@ -55,6 +55,7 @@ sealed interface Route : NavKey {
 
                 @Serializable
                 data object EditProfile : Route
+
             }
         }
 
@@ -62,14 +63,15 @@ sealed interface Route : NavKey {
         @Serializable
         data object SubscribeNav : Route {
             @Serializable
-            data object SubscriptionPlan : Route
+            data object SubscriptionPlans : Route
 
             @Serializable
             data object Checkout : Route
 
-            @Serializable
-            data object CheckoutSuccess : Route
         }
+
+        @Serializable
+        data object ActiveSubscriptionDetails : Route
 
         @Serializable
         data object Onboarding : Route

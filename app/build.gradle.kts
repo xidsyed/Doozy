@@ -104,6 +104,9 @@ dependencies {
     // Icons
     implementation(libs.androidx.compose.material.icons.core)
 
+    // Validation
+    implementation(libs.konform)
+
 
 
     // testing

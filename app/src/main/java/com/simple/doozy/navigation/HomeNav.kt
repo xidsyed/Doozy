@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -36,12 +37,21 @@ import com.simple.doozy.navigation.route.Route.AuthenticatedNav.HomeNav
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/**
+ * No [NavDisplay] used here since we want all the [com.simple.doozy.navigation.route.Route.AuthenticatedNav.HomeNav]
+ * destination viewmodels to last as the [AuthenticatedNav] is on backstack.
+ * */
 
 @Composable
-fun HomeNav(modifier: Modifier) {
+fun HomeNav(
+    modifier: Modifier,
+    onNavigateToSubscribeFlow: () -> Unit,
+    onNavigateToActiveSubscriptionPage: () -> Unit,
+    homeViewModel: HomeViewModel = koinViewModel()
+) {
 
     var showBottomBar by remember { mutableStateOf(true) }
-    var activeTab: HomeNav.BottomNavTab by remember { mutableStateOf(HomeNav.TodosTab) }
+    val activeTab by homeViewModel.activeTab.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -54,7 +64,7 @@ fun HomeNav(modifier: Modifier) {
                 NavigationBar {
                     NavigationBarItem(
                         selected = activeTab == HomeNav.TodosTab,
-                        onClick = { activeTab = HomeNav.TodosTab },
+                        onClick = { homeViewModel.updateTab(HomeNav.TodosTab) },
                         icon = {
                             Icon(
                                 Icons.AutoMirrored.Filled.List,
@@ -65,7 +75,7 @@ fun HomeNav(modifier: Modifier) {
                     )
                     NavigationBarItem(
                         selected = activeTab == HomeNav.ProfileTab,
-                        onClick = { activeTab = HomeNav.ProfileTab },
+                        onClick = { homeViewModel.updateTab(HomeNav.ProfileTab) },
                         icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                         label = { Text("Profile") }
                     )
@@ -74,22 +84,31 @@ fun HomeNav(modifier: Modifier) {
             }
         }
     ) { innerPadding ->
-
-        val tabDestinationModifier = modifier.padding(innerPadding)
+        val tabDestinationModifier = Modifier.padding(innerPadding)
 
         if (activeTab == HomeNav.TodosTab) {
             TodoNav(tabDestinationModifier, showBottomBar = { showBottomBar = it })
         } else {
-            SettingsNav(tabDestinationModifier, showBottomBar = { showBottomBar = it })
+            SettingsNav(
+                tabDestinationModifier,
+                showBottomBar = { showBottomBar = it },
+                onNavigateToSubscribeFlow = onNavigateToSubscribeFlow,
+                onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage
+            )
         }
     }
 }
 
 @Composable
-fun SettingsNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
+fun SettingsNav(
+    modifier: Modifier,
+    showBottomBar: (Boolean) -> Unit,
+    onNavigateToSubscribeFlow: () -> Unit,
+    onNavigateToActiveSubscriptionPage: () -> Unit
+) {
     val backStack = rememberNavBackStack(HomeNav.ProfileTab.Profile)
 
-    if(backStack.size > 1 ){
+    if (backStack.size > 1) {
         showBottomBar(false)
     } else {
         showBottomBar(true)
@@ -108,7 +127,9 @@ fun SettingsNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
                 ProfileScreen(
                     modifier = modifier,
                     viewModel = profileViewModel,
-                    onNavigateToEditProfile = { backStack.add(HomeNav.ProfileTab.EditProfile) }
+                    onNavigateToEditProfile = { backStack.add(HomeNav.ProfileTab.EditProfile) },
+                    onNavigateToSubscribeFlow = onNavigateToSubscribeFlow,
+                    onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage
                 )
             }
             entry<HomeNav.ProfileTab.EditProfile> {
@@ -127,7 +148,7 @@ fun SettingsNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
 fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
     val backStack = rememberNavBackStack(HomeNav.TodosTab.TodosList)
 
-    if(backStack.size > 1 ){
+    if (backStack.size > 1) {
         showBottomBar(false)
     } else {
         showBottomBar(true)

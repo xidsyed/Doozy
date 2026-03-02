@@ -5,11 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.auth.AuthManager
 import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.model.User
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class EditProfileState(
     val user: User? = null,
@@ -21,21 +25,22 @@ data class EditProfileState(
 )
 
 class EditProfileViewModel(
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val snackbarController: com.simple.doozy.common.ui.util.SnackbarController
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileState())
     val uiState = _uiState.asStateFlow()
+
+    private val eventChannel = Channel<EditProfileEvent>()
+    val events = eventChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
             authManager.state.collectLatest { authState ->
                 val user = when (authState) {
                     is AuthState.Authenticated -> {
-                        if (authState.id.id == User.MOCK.id.id) User.MOCK else User(
-                            authState.id,
-                            User.Metadata(subscribeToEmails = true, gender = null)
-                        )
+                        User(authState.id, User.Metadata(subscribeToEmails = true))
                     }
 
                     is AuthState.Registered -> authState.user
@@ -46,9 +51,9 @@ class EditProfileViewModel(
                     it.copy(
                         user = user,
                         isLoading = false,
-                        nameInput = user?.id?.name ?: "",
+                        nameInput = user?.metadata?.name ?: "",
                         genderInput = user?.metadata?.gender ?: "Prefer not to say",
-                        emailInput = user?.id?.email ?: "",
+                        emailInput = user?.metadata?.email ?: "",
                         subscribeInput = user?.metadata?.subscribeToEmails ?: false
                     )
                 }
@@ -70,19 +75,37 @@ class EditProfileViewModel(
         val currentState = _uiState.value
         val currentUser = currentState.user ?: return
 
+        if (currentState.nameInput.isBlank()) {
+            snackbarController.showMessage("Name cannot be empty")
+            return
+        }
+
+        if (currentState.emailInput.isBlank()) {
+            snackbarController.showMessage("Email cannot be empty")
+            return
+        }
+
+        if (currentState.genderInput == "Prefer not to say" || currentState.genderInput.isBlank()) {
+            snackbarController.showMessage("Please select a gender")
+            return
+        }
+
         val updatedUser = currentUser.copy(
-            id = currentUser.id.copy(
+            id = currentUser.id.copy(),
+            metadata = (currentUser.metadata ?: User.Metadata(subscribeToEmails = false)).copy(
                 name = currentState.nameInput,
-                email = currentState.emailInput
-            ),
-            metadata = currentUser.metadata.copy(
+                email = currentState.emailInput,
                 gender = currentState.genderInput,
                 subscribeToEmails = currentState.subscribeInput
             )
         )
 
         viewModelScope.launch {
-            authManager.updateUser(updatedUser)
+            withContext(NonCancellable) {
+                authManager.updateUser(updatedUser)
+                snackbarController.showMessage("Profile updated successfully")
+                eventChannel.send(EditProfileEvent.NavigateBack)
+            }
         }
     }
 }
@@ -93,4 +116,8 @@ sealed interface EditProfileAction {
     data class EmailChanged(val email: String) : EditProfileAction
     data class SubscribeChanged(val subscribed: Boolean) : EditProfileAction
     data object SaveClicked : EditProfileAction
+}
+
+sealed interface EditProfileEvent {
+    data object NavigateBack : EditProfileEvent
 }

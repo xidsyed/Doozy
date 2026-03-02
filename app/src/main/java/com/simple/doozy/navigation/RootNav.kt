@@ -21,7 +21,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun RootNav(modifier: Modifier) {
     val viewModel = koinViewModel<MainViewModel>()
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val rootDestination by remember { derivedStateOf { if (authState is AuthState.Authenticated) Route.AuthenticatedNav else Route.UnauthenticatedNav } }
+    val rootDestination by remember { derivedStateOf { if (authState is AuthState.Unauthenticated) Route.UnauthenticatedNav else Route.AuthenticatedNav } }
     val backstack = rememberNavBackStack(rootDestination)
 
     LaunchedEffect(rootDestination) {

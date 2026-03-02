@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.ExitToApp
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Info
@@ -27,6 +28,8 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,13 +45,17 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.common.ui.util.AppPreview
+import com.simple.doozy.common.ui.util.shimmerEffect
 import com.simple.doozy.feature.auth.model.User
+import com.simple.doozy.ui.theme.PremiumGold
 import com.simple.doozy.ui.theme.ScreenPaddingValues
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToSubscribeFlow: () -> Unit,
+    onNavigateToActiveSubscriptionPage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,6 +67,9 @@ fun ProfileScreen(
                 ProfileUiAction.LogoutClicked -> viewModel.logout()
                 is ProfileUiAction.DummyButtonClicked -> { /* Handle dummy later */
                 }
+
+                ProfileUiAction.SubscribeClicked -> onNavigateToSubscribeFlow()
+                ProfileUiAction.ManageSubscriptionClicked -> onNavigateToActiveSubscriptionPage()
             }
         },
         modifier = modifier
@@ -87,7 +97,7 @@ private fun ProfileScreenContent(
 
             // Header: Avatar & Info
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Box(
@@ -107,57 +117,166 @@ private fun ProfileScreenContent(
                 Spacer(Modifier.width(20.dp))
                 Column {
                     Text(
-                        user.id.name,
+                        user.metadata?.name ?: "Anonymous User",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        user.id.email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (user.metadata?.email != null) {
+                        Text(
+                            user.metadata.email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        InputChip(
+                            selected = true,
+                            onClick = { onAction(ProfileUiAction.EditProfileClicked) },
+                            label = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        "Setup your profile",
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                        contentDescription = "Edit Profile",
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            },
+                            colors = InputChipDefaults.inputChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.onSurface,
+                                selectedLabelColor = MaterialTheme.colorScheme.surface
+                            ),
+                            border = null
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(40.dp))
 
             // Subscription
-            state.subscription?.let { sub ->
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+            when (val subState = state.subscription) {
+                is com.simple.doozy.feature.subscription.data.SubscriptionState.Checking -> {
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = PremiumGold.copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, PremiumGold),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column {
-                            Text(
-                                "Subscription",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                sub.plan.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(sub.status, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            Column {
+                                Box(
+                                    modifier = Modifier
+                                        .height(14.dp)
+                                        .width(80.dp)
+                                        .clip(MaterialTheme.shapes.small)
+                                        .shimmerEffect()
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .height(20.dp)
+                                        .width(140.dp)
+                                        .clip(MaterialTheme.shapes.small)
+                                        .shimmerEffect()
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .height(24.dp)
+                                    .width(60.dp)
+                                    .clip(MaterialTheme.shapes.extraLarge)
+                                    .shimmerEffect()
+                            )
                         }
                     }
+                    Spacer(Modifier.height(32.dp))
                 }
-                Spacer(Modifier.height(32.dp))
+
+                is com.simple.doozy.feature.subscription.data.SubscriptionState.NoSubscription -> {
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onAction(ProfileUiAction.SubscribeClicked) }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    "Upgrade to Premium",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "Unlock all features",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                contentDescription = "Upgrade",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(32.dp))
+                }
+
+                is com.simple.doozy.feature.subscription.data.SubscriptionState.Subscribed -> {
+                    Surface(
+                        shape = MaterialTheme.shapes.medium,
+                        color = PremiumGold.copy(alpha = 0.15f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, PremiumGold),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onAction(ProfileUiAction.ManageSubscriptionClicked) }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    "Subscription",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    subState.plan.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                            Badge(
+                                containerColor = PremiumGold,
+                                contentColor = Color.White
+                            ) {
+                                Text("Active", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(32.dp))
+                }
             }
 
             // General section
@@ -219,6 +338,8 @@ sealed interface ProfileUiAction {
     data object EditProfileClicked : ProfileUiAction
     data object LogoutClicked : ProfileUiAction
     data class DummyButtonClicked(val buttonName: String) : ProfileUiAction
+    data object SubscribeClicked : ProfileUiAction
+    data object ManageSubscriptionClicked : ProfileUiAction
 }
 
 @Composable
@@ -265,9 +386,9 @@ private fun ProfileScreenPreview() {
         ProfileScreenContent(
             state = ProfileState(
                 user = User.MOCK,
-                subscription = com.simple.doozy.feature.subscription.data.Subscription(
+                subscription = com.simple.doozy.feature.subscription.data.SubscriptionState.Subscribed(
                     com.simple.doozy.feature.subscription.data.SubscriptionPlan("pro", "Pro Monthly", "$9.99"),
-                    "Active"
+                    "2026-03-02", "2026-04-02", "2026-04-02"
                 ),
                 isLoading = false
             ),

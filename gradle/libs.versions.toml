@@ -45,6 +45,8 @@ materialIconsCore = "1.7.8"
 # error handling
 kotlinResult = "2.1.0"
 
+# validation
+konform = "0.11.1"
 
 [libraries]
 androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
@@ -114,6 +116,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 # error handling
 kotlin-result = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlinResult" }
 
+#validation
+konform = { module = "io.konform:konform", version.ref = "konform" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

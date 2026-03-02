@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.common.ui.util.AppPreview
 import com.simple.doozy.feature.auth.model.User
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun EditProfileScreen(
@@ -59,15 +61,19 @@ fun EditProfileScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                is EditProfileEvent.NavigateBack -> onNavigateBack()
+            }
+        }
+    }
+
     EditProfileScreenContent(
         state = state,
         onAction = { action ->
-            if (action == EditProfileAction.SaveClicked) {
-                viewModel.handleAction(action)
-                onNavigateBack()
-            } else {
-                viewModel.handleAction(action)
-            }
+            viewModel.handleAction(action)
         },
         onNavigateBack = onNavigateBack,
         modifier = modifier
@@ -86,11 +92,7 @@ private fun EditProfileScreenContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "Edit Profile",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
+
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

@@ -4,11 +4,13 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.simple.doozy.DoozyApplication
 import com.simple.doozy.MainViewModel
+import com.simple.doozy.common.ui.util.SnackbarController
 import com.simple.doozy.core.appDataStore
 import com.simple.doozy.feature.auth.AuthManager
 import com.simple.doozy.feature.auth.di.authModule
 import com.simple.doozy.feature.onboarding.di.onboardingModule
 import com.simple.doozy.feature.todo.di.TodoModule
+import com.simple.doozy.navigation.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -22,7 +24,9 @@ val mainModule = module {
     }
     single<DataStore<Preferences>> { androidContext().appDataStore }
     single<AuthManager>()
+    single<SnackbarController>()
     viewModel<MainViewModel>()
+    viewModel<HomeViewModel>()
     includes(TodoModule)
     includes(authModule)
     includes(onboardingModule)
