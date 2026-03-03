@@ -2,96 +2,150 @@ package com.simple.doozy.feature.auth.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simple.doozy.R
+import com.simple.doozy.common.ui.defaultButtonColors
 import com.simple.doozy.ui.theme.DefaultRoundedShape
 
 @Composable
-fun LoginScreen(modifier: Modifier, state: LoginState, login: () -> Unit) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    state: LoginState,
+    onPhoneChange: (String) -> Unit,
+    navigateToOtp: (String) -> Unit
+) {
     Column(
-        modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .padding(top = 48.dp, bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Logo Section
         Column(
-            Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+            modifier = Modifier.padding(bottom = 48.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Doozy",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 54.sp
-                )
+                text = "Doozy",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 40.sp,
+                ),
+                color = MaterialTheme.colorScheme.onBackground
             )
-            Text("All do's all day")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Minimalist Task Management",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
         }
-        Spacer(Modifier.height(32.dp))
+
+        // Form Section
         Column(
-            Modifier.weight(1f),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            LoginGoogleButton(state.isLoading, login)
-            Spacer(Modifier.height(16.dp))
-            state.error?.let {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "Error: $it",
-                    color = MaterialTheme.colorScheme.error,
+                    text = "Phone Number",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    modifier = Modifier.padding(start = 4.dp),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                OutlinedTextField(
+                    value = state.phoneNumber,
+                    onValueChange = { newValue ->
+                        if (newValue.length <= 10 && newValue.all { it.isDigit() }) {
+                            onPhoneChange(newValue)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+                    ),
+                    placeholder = {
+                        Text(
+                            "98765 43210",
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+                            fontSize = 18.sp
+                        )
+                    },
+                    leadingIcon = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp)
+                        ) {
+                            Text(
+                                text = "+91",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(24.dp)
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                    }
                 )
             }
+
+            Button(
+                onClick = { navigateToOtp(state.phoneNumber) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = state.phoneNumber.length == 10,
+                colors = defaultButtonColors()
+            ) {
+                Text(
+                    text = "Get Started",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                )
+            }
+
+            Text(
+                text = "By continuing, you agree to our Terms of Service\nand acknowledge our Privacy Policy.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                lineHeight = 16.sp
+            )
         }
-
-
-    }
-}
-
-@Composable
-fun LoginGoogleButton(isLoading: Boolean, login: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .height(54.dp)
-            .clip(DefaultRoundedShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable(enabled = !isLoading, onClick = login)
-            .padding(horizontal = 32.dp)
-            .alpha(if (isLoading) 0.5f else 1f),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            modifier = Modifier.height(16.dp),
-            imageVector = ImageVector.vectorResource(R.drawable.ic_google),
-            contentDescription = "Google Icon",
-            tint = Color.Unspecified
-        )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            "Sign In With Google",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.labelLarge
-        )
     }
 }

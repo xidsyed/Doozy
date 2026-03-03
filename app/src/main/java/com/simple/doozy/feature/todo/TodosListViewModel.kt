@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class TodosViewModel(
+class TodosListViewModel(
     private val todoRepo: TodoRepository,
 ) : ViewModel() {
 

@@ -1,45 +1,55 @@
 package com.simple.doozy.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.simple.doozy.feature.todo.TodosScreen
-import com.simple.doozy.feature.todo.TodosViewModel
-import com.simple.doozy.feature.todo.detail.TodoDetailViewModel
-import com.simple.doozy.feature.todo.detail.TodoDetailsScreen
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
+import com.simple.doozy.navigation.route.Route.AuthenticatedNav
+
 
 @Composable
 fun AuthenticatedNav(modifier: Modifier) {
-
-    val backstack = rememberNavBackStack(Route.Authenticated.Todos)
+    val backstack = rememberNavBackStack(AuthenticatedNav.HomeNav)
 
     NavDisplay(
+        backStack = backstack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        backStack = backstack,
         onBack = { backstack.removeLastOrNull() },
         entryProvider = entryProvider {
-            entry<Route.Authenticated.Todos> {
-                val todosViewModel = koinViewModel<TodosViewModel>()
-                TodosScreen(
+            entry<AuthenticatedNav.HomeNav> {
+                HomeNav(
                     modifier = modifier,
-                    viewModel = todosViewModel,
-                    navigateToTodoDetail = { backstack.add(Route.Authenticated.TodoDetail(it.id)) }
+                    onNavigateToSubscribeFlow = { backstack.add(AuthenticatedNav.SubscribeNav) },
+                    onNavigateToActiveSubscriptionPage = { backstack.add(AuthenticatedNav.ActiveSubscriptionDetails) }
                 )
             }
-            entry<Route.Authenticated.TodoDetail> { route ->
-                val todoDetailViewModel = koinViewModel<TodoDetailViewModel> {
-                    parametersOf(route.todoId)
+
+            entry<AuthenticatedNav.SubscribeNav> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Subscription Flow (SubscriptionPlans, Checkout)")
                 }
-                TodoDetailsScreen(modifier, todoDetailViewModel)
+            }
+
+            entry<AuthenticatedNav.ActiveSubscriptionDetails> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Active Subscription Details")
+                }
+            }
+
+            entry<AuthenticatedNav.Onboarding> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Onboarding Flow")
+                }
             }
         }
     )

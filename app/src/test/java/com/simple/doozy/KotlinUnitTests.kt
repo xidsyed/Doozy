@@ -24,14 +24,18 @@ class KotlinUnitTests {
         log(lazyValue)
         log(lazyValue)
     }
+
+    @Test
+    fun `kotlin results`() {
+        val e = Result.success("hello")
+    }
 }
 
 // OTHERS
 
 class Example {
     var p: String by Delegate()
-    var name: String by Delegates.observable("<no name>") {
-            prop, old, new ->
+    var name: String by Delegates.observable("<no name>") { prop, old, new ->
         println("$old -> $new")
     }
 }
