@@ -2,7 +2,7 @@ package com.simple.doozy.feature.auth.screens
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.simple.doozy.feature.auth.AuthManager
+import com.simple.doozy.feature.auth.data.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -13,7 +13,7 @@ data class LoginState(
     val phoneNumber: String = ""
 )
 
-class LoginViewModel(private val authManager: AuthManager) : ViewModel() {
+class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(
         LoginState(

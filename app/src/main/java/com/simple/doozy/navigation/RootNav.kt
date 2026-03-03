@@ -13,19 +13,19 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.simple.doozy.MainViewModel
-import com.simple.doozy.feature.auth.AuthState
+import com.simple.doozy.feature.session.SessionState
 import com.simple.doozy.navigation.route.Route
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun RootNav(modifier: Modifier) {
     val viewModel = koinViewModel<MainViewModel>()
-    val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val rootDestination by remember { derivedStateOf { if (authState is AuthState.Unauthenticated) Route.UnauthenticatedNav else Route.AuthenticatedNav } }
+    val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
+    val rootDestination by remember { derivedStateOf { if (sessionState is SessionState.Unauthenticated) Route.UnauthenticatedNav else Route.AuthenticatedNav } }
     val backstack = rememberNavBackStack(rootDestination)
 
     LaunchedEffect(rootDestination) {
-        if(rootDestination != backstack.lastOrNull()) {
+        if (rootDestination != backstack.lastOrNull()) {
             backstack.clear()
             backstack.add(rootDestination)
         }

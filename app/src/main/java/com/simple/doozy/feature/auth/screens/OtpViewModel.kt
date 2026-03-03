@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
-import com.simple.doozy.feature.auth.AuthManager
+import com.simple.doozy.feature.auth.data.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -19,7 +19,7 @@ data class OtpState(
     val resendCountdown: Int = 0
 )
 
-class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
+class OtpViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(OtpState())
     val state = _state.asStateFlow()
@@ -27,7 +27,7 @@ class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            authManager.resendCountdown.collect { countdown ->
+            authRepository.resendCountdown.collect { countdown ->
                 _state.update { it.copy(resendCountdown = countdown) }
             }
         }
@@ -49,7 +49,7 @@ class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
     private fun sendOtp() {
         viewModelScope.launch {
             _state.update { it.copy(isSendingCode = true, error = null) }
-            authManager.sendOtp(phoneNumber)
+            authRepository.sendOtp(phoneNumber)
                 .onSuccess {
                     _state.update { it.copy(isSendingCode = false) }
                 }
@@ -63,7 +63,7 @@ class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
         if (_state.value.resendCountdown == 0) {
             viewModelScope.launch {
                 _state.update { it.copy(isSendingCode = true, error = null) }
-                authManager.resendOtp()
+                authRepository.resendOtp()
                     .onSuccess {
                         _state.update { it.copy(isSendingCode = false) }
                     }
@@ -78,7 +78,7 @@ class OtpViewModel(private val authManager: AuthManager) : ViewModel() {
         if (_state.value.otpCode.length == 6) {
             viewModelScope.launch {
                 _state.update { it.copy(isLoading = true, error = null) }
-                authManager.loginWithOtp(_state.value.otpCode)
+                authRepository.loginWithOtp(_state.value.otpCode)
                     .onSuccess {
                         _state.update { it.copy(isLoading = false, error = null) }
                     }

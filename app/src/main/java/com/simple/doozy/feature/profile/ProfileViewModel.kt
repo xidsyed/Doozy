@@ -2,11 +2,12 @@ package com.simple.doozy.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.simple.doozy.feature.auth.AuthManager
-import com.simple.doozy.feature.auth.AuthState
+import com.simple.doozy.feature.auth.data.AuthRepository
 import com.simple.doozy.feature.auth.model.User
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
 import com.simple.doozy.feature.subscription.data.SubscriptionState
+import com.simple.doozy.feature.user.data.UserRepository
+import com.simple.doozy.feature.user.data.UserState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -20,7 +21,8 @@ data class ProfileState(
 )
 
 class ProfileViewModel(
-    private val authManager: AuthManager,
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
     private val subscriptionRepository: SubscriptionRepository
 ) : ViewModel() {
 
@@ -29,16 +31,9 @@ class ProfileViewModel(
 
     init {
         viewModelScope.launch {
-            authManager.state.collectLatest { authState ->
-                val user = when (authState) {
-                    is AuthState.Authenticated -> {
-                        if (authState.id.id == User.MOCK.id.id) User.MOCK else User(
-                            authState.id,
-                            User.Metadata(subscribeToEmails = true)
-                        )
-                    }
-
-                    is AuthState.Registered -> authState.user
+            userRepository.state.collectLatest { userState ->
+                val user = when (userState) {
+                    is UserState.Registered -> userState.user
                     else -> null
                 }
                 _uiState.update { it.copy(user = user, isLoading = false) }
@@ -53,7 +48,7 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            authManager.logout()
+            authRepository.logout()
         }
     }
 }

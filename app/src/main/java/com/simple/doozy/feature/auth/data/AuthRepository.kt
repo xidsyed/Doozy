@@ -1,8 +1,9 @@
-package com.simple.doozy.feature.auth
+package com.simple.doozy.feature.auth.data
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.model.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,43 +15,53 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.uuid.ExperimentalUuidApi
 
-class AuthManager {
+interface AuthRepository {
+    val state: Flow<AuthState>
+    val resendCountdown: Flow<Int>
+
+    suspend fun initialize()
+    suspend fun sendOtp(phoneNumber: String): Result<Unit, Exception>
+    suspend fun loginWithOtp(otp: String): Result<Unit, Exception>
+    suspend fun resendOtp(): Result<Unit, Exception>
+    suspend fun logout()
+    fun getCurrentToken(): String?
+}
+
+class DefaultAuthRepository : AuthRepository {
     private val _state: MutableStateFlow<AuthState> = MutableStateFlow(AuthState.Checking)
-    val state: Flow<AuthState> = _state.asStateFlow()
+    override val state: Flow<AuthState> = _state.asStateFlow()
 
     private val _resendCountdown: MutableStateFlow<Int> = MutableStateFlow(0)
-    val resendCountdown: Flow<Int> = _resendCountdown.asStateFlow()
+    override val resendCountdown: Flow<Int> = _resendCountdown.asStateFlow()
 
     private var countdownJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    suspend fun initialize() {
+    override suspend fun initialize() {
         withContext(Dispatchers.IO) {
             delay(1_000)
             _state.update { AuthState.Unauthenticated }
         }
     }
 
-    suspend fun sendOtp(phoneNumber: String): Result<Unit, Exception> {
+    override suspend fun sendOtp(phoneNumber: String): Result<Unit, Exception> {
         delay(1000)
         startCountdown()
         return Ok(Unit)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    suspend fun loginWithOtp(otp: String): Result<Unit, Exception> {
+    override suspend fun loginWithOtp(otp: String): Result<Unit, Exception> {
         delay(1000)
         return if (otp == "000000") { // We will accept 000000 as valid OTP for test
-            _state.update { AuthState.Authenticated(User.MOCK.id) }
+            _state.update { AuthState.Authenticated(User.MOCK.id.id, "mock_token") }
             Ok(Unit)
         } else {
             Err(Exception("Invalid OTP Code"))
         }
     }
 
-    suspend fun resendOtp(): Result<Unit, Exception> {
+    override suspend fun resendOtp(): Result<Unit, Exception> {
         delay(1000)
         startCountdown()
         return Ok(Unit)
@@ -67,14 +78,17 @@ class AuthManager {
         }
     }
 
-    suspend fun logout() {
+    override suspend fun logout() {
         delay(1000)
         _state.update { AuthState.Unauthenticated }
     }
 
-    suspend fun updateUser(user: User) {
-        delay(1000)
-        _state.update { AuthState.Registered(user) }
+    override fun getCurrentToken(): String? {
+        val currentState = _state.value
+        return if (currentState is AuthState.Authenticated) {
+            currentState.authToken
+        } else {
+            null
+        }
     }
-
 }

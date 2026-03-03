@@ -6,10 +6,14 @@ import com.simple.doozy.DoozyApplication
 import com.simple.doozy.MainViewModel
 import com.simple.doozy.common.ui.util.SnackbarController
 import com.simple.doozy.core.appDataStore
-import com.simple.doozy.feature.auth.AuthManager
+import com.simple.doozy.feature.auth.data.AuthRepository
+import com.simple.doozy.feature.auth.data.DefaultAuthRepository
 import com.simple.doozy.feature.auth.di.authModule
 import com.simple.doozy.feature.onboarding.di.onboardingModule
+import com.simple.doozy.feature.session.SessionManager
 import com.simple.doozy.feature.todo.di.TodoModule
+import com.simple.doozy.feature.user.data.DefaultUserRepository
+import com.simple.doozy.feature.user.data.UserRepository
 import com.simple.doozy.navigation.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
@@ -23,7 +27,9 @@ val mainModule = module {
         application.applicationScope
     }
     single<DataStore<Preferences>> { androidContext().appDataStore }
-    single<AuthManager>()
+    single<AuthRepository> { DefaultAuthRepository() }
+    single<UserRepository> { DefaultUserRepository(get()) }
+    single<SessionManager> { SessionManager(get(), get(), get(), get()) }
     single<SnackbarController>()
     viewModel<MainViewModel>()
     viewModel<HomeViewModel>()

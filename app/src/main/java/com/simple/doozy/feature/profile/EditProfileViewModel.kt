@@ -2,9 +2,9 @@ package com.simple.doozy.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.simple.doozy.feature.auth.AuthManager
-import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.model.User
+import com.simple.doozy.feature.user.data.UserRepository
+import com.simple.doozy.feature.user.data.UserState
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ data class EditProfileState(
 )
 
 class EditProfileViewModel(
-    private val authManager: AuthManager,
+    private val userRepository: UserRepository,
     private val snackbarController: com.simple.doozy.common.ui.util.SnackbarController
 ) : ViewModel() {
 
@@ -37,13 +37,9 @@ class EditProfileViewModel(
 
     init {
         viewModelScope.launch {
-            authManager.state.collectLatest { authState ->
-                val user = when (authState) {
-                    is AuthState.Authenticated -> {
-                        User(authState.id, User.Metadata(subscribeToEmails = true))
-                    }
-
-                    is AuthState.Registered -> authState.user
+            userRepository.state.collectLatest { userState ->
+                val user = when (userState) {
+                    is UserState.Registered -> userState.user
                     else -> null
                 }
 
@@ -102,7 +98,7 @@ class EditProfileViewModel(
 
         viewModelScope.launch {
             withContext(NonCancellable) {
-                authManager.updateUser(updatedUser)
+                userRepository.updateUser(updatedUser)
                 snackbarController.showMessage("Profile updated successfully")
                 eventChannel.send(EditProfileEvent.NavigateBack)
             }

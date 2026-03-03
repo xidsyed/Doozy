@@ -8,7 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.simple.doozy.feature.auth.AuthState
+import com.simple.doozy.feature.session.SessionState
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     // Check whether the initial data is ready.
-                    return if (viewModel.authState.value !is AuthState.Checking) {
+                    val state = viewModel.sessionState.value
+                    return if (state is SessionState.Unauthenticated || state is SessionState.Registered) {
                         // The content is ready. Start drawing.
                         content.viewTreeObserver.removeOnPreDrawListener(this)
                         true
