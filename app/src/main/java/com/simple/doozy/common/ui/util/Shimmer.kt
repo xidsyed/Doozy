@@ -19,6 +19,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
 
 fun Modifier.shimmerEffect(
     baseColor: Color? = null,
@@ -52,6 +54,42 @@ fun Modifier.shimmerEffect(
             end = Offset(startOffsetX + size.width.toFloat(), size.height.toFloat())
         )
     ).onGloballyPositioned {
+        size = it.size
+    }
+}
+
+fun Modifier.shimmerOverlay(
+    durationMillis: Int = 3000
+): Modifier = composed {
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val transition = rememberInfiniteTransition(label = "shimmerOverlay")
+    val startOffsetX by transition.animateFloat(
+        initialValue = -2 * size.width.toFloat(),
+        targetValue = 2 * size.width.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmerOverlay"
+    )
+
+    this.drawWithContent {
+        drawContent()
+        if (size.width > 0) {
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.White.copy(alpha = 0.3f),
+                        Color.Transparent,
+                    ),
+                    start = Offset(startOffsetX, 0f),
+                    end = Offset(startOffsetX + size.width.toFloat(), size.height.toFloat())
+                ),
+                blendMode = BlendMode.SrcAtop
+            )
+        }
+    }.onGloballyPositioned {
         size = it.size
     }
 }

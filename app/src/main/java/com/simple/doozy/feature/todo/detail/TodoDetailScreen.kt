@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,7 +60,6 @@ import com.simple.doozy.common.ui.CustomCheckbox
 import com.simple.doozy.common.ui.util.AppPreview
 import com.simple.doozy.feature.todo.data.SubTask
 import com.simple.doozy.ui.theme.DefaultRoundedShape
-import com.simple.doozy.ui.theme.ScreenPaddingValues
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

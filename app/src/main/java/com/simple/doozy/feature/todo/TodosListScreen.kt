@@ -33,20 +33,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.simple.doozy.R
 import com.simple.doozy.feature.todo.data.Todo
 import com.simple.doozy.ui.theme.PremiumGold
 import com.simple.doozy.ui.theme.ScreenPaddingValues
+import com.simple.doozy.feature.subscription.paywall.PaywallBottomSheet
 
 @Composable
 fun TodosListScreen(
     modifier: Modifier = Modifier,
     viewModel: TodosListViewModel,
-    navigateToTodoDetail: (String?) -> Unit
+    navigateToTodoDetail: (String?) -> Unit,
+    navigateToCheckout: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     var activeFilter by remember { mutableStateOf("All") }
+    var showPaywall by remember { mutableStateOf(false) }
+
     val filteredTodos = remember(state.todos, activeFilter) {
         when (activeFilter) {
             "Pending" -> state.todos.filter { !it.completed }
@@ -108,11 +114,13 @@ fun TodosListScreen(
                     contentColor = MaterialTheme.colorScheme.surface
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .clickable { showPaywall = true }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Star,
+                            painter = painterResource(R.drawable.ic_premium_diamond),
                             contentDescription = "Premium",
                             modifier = Modifier.size(16.dp)
                         )
@@ -178,6 +186,16 @@ fun TodosListScreen(
                 setCompleted = setCompleted,
                 removeTodo = removeTodo,
                 onTodoClick = { navigateToTodoDetail(it.id) }
+            )
+        }
+
+        if (showPaywall) {
+            PaywallBottomSheet(
+                onDismissRequest = { showPaywall = false },
+                onCheckoutClick = {
+                    showPaywall = false
+                    navigateToCheckout()
+                }
             )
         }
     }

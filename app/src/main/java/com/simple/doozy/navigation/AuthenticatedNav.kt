@@ -11,6 +11,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.feature.subscription.checkout.CheckoutScreen
+import com.simple.doozy.feature.subscription.status.SubscriptionStatusScreen
 import com.simple.doozy.navigation.route.Route.AuthenticatedNav
 
 
@@ -29,21 +31,30 @@ fun AuthenticatedNav(modifier: Modifier) {
             entry<AuthenticatedNav.HomeNav> {
                 HomeNav(
                     modifier = modifier,
-                    onNavigateToSubscribeFlow = { backstack.add(AuthenticatedNav.SubscribeNav) },
-                    onNavigateToActiveSubscriptionPage = { backstack.add(AuthenticatedNav.ActiveSubscriptionDetails) }
+                    onNavigateToSubscribeFlow = { backstack.add(AuthenticatedNav.SubscribeNav.Checkout) },
+                    onNavigateToActiveSubscriptionPage = { backstack.add(AuthenticatedNav.SubscriptionStatus) }
                 )
             }
 
-            entry<AuthenticatedNav.SubscribeNav> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Subscription Flow (SubscriptionPlans, Checkout)")
-                }
+            entry<AuthenticatedNav.SubscribeNav.Checkout> {
+                CheckoutScreen(
+                    modifier = modifier,
+                    onBack = { backstack.removeLastOrNull() },
+                    onSubscribe = {
+                        backstack.removeLastOrNull() // Remove checkout from backstack
+                        backstack.add(AuthenticatedNav.SubscriptionStatus)
+                    }
+                )
             }
 
-            entry<AuthenticatedNav.ActiveSubscriptionDetails> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Active Subscription Details")
-                }
+            entry<AuthenticatedNav.SubscriptionStatus> {
+                SubscriptionStatusScreen(
+                    modifier = modifier,
+                    onReturnHome = {
+                        backstack.clear()
+                        backstack.add(AuthenticatedNav.HomeNav)
+                    }
+                )
             }
 
             entry<AuthenticatedNav.Onboarding> {

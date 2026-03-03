@@ -34,7 +34,7 @@ fun App() {
             modifier = Modifier.fillMaxSize(),
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
-            RootNav(Modifier
+            RootNav(modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding))
         }

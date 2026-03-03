@@ -62,8 +62,6 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object SubscribeNav : Route {
-            @Serializable
-            data object SubscriptionPlans : Route
 
             @Serializable
             data object Checkout : Route
@@ -71,7 +69,7 @@ sealed interface Route : NavKey {
         }
 
         @Serializable
-        data object ActiveSubscriptionDetails : Route
+        data object SubscriptionStatus : Route
 
         @Serializable
         data object Onboarding : Route

@@ -87,10 +87,14 @@ fun HomeNav(
         val tabDestinationModifier = Modifier.padding(innerPadding)
 
         if (activeTab == HomeNav.TodosTab) {
-            TodoNav(tabDestinationModifier, showBottomBar = { showBottomBar = it })
+            TodoNav(
+                modifier = tabDestinationModifier,
+                showBottomBar = { showBottomBar = it },
+                onNavigateToSubscribeFlow = onNavigateToSubscribeFlow
+            )
         } else {
             SettingsNav(
-                tabDestinationModifier,
+                modifier = tabDestinationModifier,
                 showBottomBar = { showBottomBar = it },
                 onNavigateToSubscribeFlow = onNavigateToSubscribeFlow,
                 onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage
@@ -145,7 +149,7 @@ fun SettingsNav(
 }
 
 @Composable
-fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
+fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSubscribeFlow: () -> Unit) {
     val backStack = rememberNavBackStack(HomeNav.TodosTab.TodosList)
 
     if (backStack.size > 1) {
@@ -173,7 +177,8 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit) {
                                 id
                             )
                         )
-                    }
+                    },
+                    navigateToCheckout = onNavigateToSubscribeFlow
                 )
             }
             entry<HomeNav.TodosTab.TodoDetail> { route ->
