@@ -26,10 +26,14 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.feature.profile.AccountPrivacyScreen
+import com.simple.doozy.feature.profile.AccountPrivacyViewModel
 import com.simple.doozy.feature.profile.EditProfileScreen
 import com.simple.doozy.feature.profile.EditProfileViewModel
 import com.simple.doozy.feature.profile.ProfileScreen
 import com.simple.doozy.feature.profile.ProfileViewModel
+import com.simple.doozy.feature.profile.SupportScreen
+import com.simple.doozy.feature.profile.SupportViewModel
 import com.simple.doozy.feature.todo.TodosListScreen
 import com.simple.doozy.feature.todo.TodosListViewModel
 import com.simple.doozy.feature.todo.detail.TodoDetailsScreen
@@ -133,7 +137,9 @@ fun SettingsNav(
                     viewModel = profileViewModel,
                     onNavigateToEditProfile = { backStack.add(HomeNav.ProfileTab.EditProfile) },
                     onNavigateToSubscribeFlow = onNavigateToSubscribeFlow,
-                    onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage
+                    onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage,
+                    onNavigateToAccountPrivacy = { backStack.add(HomeNav.ProfileTab.AccountPrivacy) },
+                    onNavigateToSupport = { backStack.add(HomeNav.ProfileTab.Support) }
                 )
             }
             entry<HomeNav.ProfileTab.EditProfile> {
@@ -141,6 +147,22 @@ fun SettingsNav(
                 EditProfileScreen(
                     modifier = modifier,
                     viewModel = editProfileViewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() }
+                )
+            }
+            entry<HomeNav.ProfileTab.AccountPrivacy> {
+                val accountPrivacyViewModel = koinViewModel<AccountPrivacyViewModel>()
+                AccountPrivacyScreen(
+                    modifier = modifier,
+                    viewModel = accountPrivacyViewModel,
+                    onNavigateBack = { backStack.removeLastOrNull() }
+                )
+            }
+            entry<HomeNav.ProfileTab.Support> {
+                val supportViewModel = koinViewModel<SupportViewModel>()
+                SupportScreen(
+                    modifier = modifier,
+                    viewModel = supportViewModel,
                     onNavigateBack = { backStack.removeLastOrNull() }
                 )
             }
