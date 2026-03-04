@@ -121,7 +121,7 @@ private fun ProfileScreenContent(
             }
 
             Text(
-                text = user.metadata?.name ?: "Anonymous User",
+                text = user.name ?: "Anonymous User",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,

@@ -54,7 +54,7 @@ class DefaultAuthRepository : AuthRepository {
     override suspend fun loginWithOtp(otp: String): Result<Unit, Exception> {
         delay(1000)
         return if (otp == "000000") { // We will accept 000000 as valid OTP for test
-            _state.update { AuthState.Authenticated(User.MOCK.id.id, "mock_token") }
+            _state.update { AuthState.Authenticated(User.MOCK.id, "mock_token") }
             Ok(Unit)
         } else {
             Err(Exception("Invalid OTP Code"))

@@ -55,7 +55,7 @@ class SupportViewModel(
         viewModelScope.launch {
             userRepository.state.collectLatest { userState ->
                 if (userState is UserState.Registered) {
-                    _uiState.update { it.copy(userId = userState.user.id.id) }
+                    _uiState.update { it.copy(userId = userState.user.id) }
                 }
             }
         }

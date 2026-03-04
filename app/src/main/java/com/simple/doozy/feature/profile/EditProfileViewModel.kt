@@ -47,10 +47,10 @@ class EditProfileViewModel(
                     it.copy(
                         user = user,
                         isLoading = false,
-                        nameInput = user?.metadata?.name ?: "",
-                        genderInput = user?.metadata?.gender ?: "Prefer not to say",
-                        emailInput = user?.metadata?.email ?: "",
-                        subscribeInput = user?.metadata?.subscribeToEmails ?: false
+                        nameInput = user?.name ?: "",
+                        genderInput = user?.gender ?: "Prefer not to say",
+                        emailInput = user?.email ?: "",
+                        subscribeInput = user?.subscribeToEmails ?: false
                     )
                 }
             }
@@ -87,13 +87,10 @@ class EditProfileViewModel(
         }
 
         val updatedUser = currentUser.copy(
-            id = currentUser.id.copy(),
-            metadata = (currentUser.metadata ?: User.Metadata(subscribeToEmails = false)).copy(
-                name = currentState.nameInput,
-                email = currentState.emailInput,
-                gender = currentState.genderInput,
-                subscribeToEmails = currentState.subscribeInput
-            )
+            name = currentState.nameInput,
+            email = currentState.emailInput,
+            gender = currentState.genderInput,
+            subscribeToEmails = currentState.subscribeInput
         )
 
         viewModelScope.launch {
