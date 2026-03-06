@@ -6,8 +6,6 @@ import com.simple.doozy.DoozyApplication
 import com.simple.doozy.MainViewModel
 import com.simple.doozy.common.ui.util.SnackbarController
 import com.simple.doozy.core.appDataStore
-import com.simple.doozy.feature.auth.data.AuthRepository
-import com.simple.doozy.feature.auth.data.DefaultAuthRepository
 import com.simple.doozy.feature.auth.di.authModule
 import com.simple.doozy.feature.onboarding.di.onboardingModule
 import com.simple.doozy.feature.session.SessionManager
@@ -27,7 +25,6 @@ val mainModule = module {
         application.applicationScope
     }
     single<DataStore<Preferences>> { androidContext().appDataStore }
-    single<AuthRepository> { DefaultAuthRepository() }
     single<UserRepository> { DefaultUserRepository(get()) }
     single<SessionManager> { SessionManager(get(), get(), get(), get()) }
     single<SnackbarController>()

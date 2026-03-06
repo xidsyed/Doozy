@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,18 +35,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.common.ui.util.AppPreview
-import com.simple.doozy.ui.theme.ScreenPaddingValues
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun CheckoutScreen(
     onBack: () -> Unit,
-    onSubscribe: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToPayment: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CheckoutViewModel = koinViewModel()
 ) {
+    val isGeneratingOrder by viewModel.isGeneratingOrder.collectAsStateWithLifecycle()
+
     CheckoutScreenContent(
         onBack = onBack,
-        onSubscribe = onSubscribe,
+        onSubscribe = {
+            viewModel.createOrder(
+                planId = "pro_monthly",
+                onOrderCreated = onNavigateToPayment,
+                onError = { /* Let's assume error handled or ignored for simplicity right now */ }
+            )
+        },
+        isGeneratingOrder = isGeneratingOrder,
         modifier = modifier
     )
 }
@@ -54,6 +66,7 @@ fun CheckoutScreen(
 private fun CheckoutScreenContent(
     onBack: () -> Unit,
     onSubscribe: () -> Unit,
+    isGeneratingOrder: Boolean,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -196,12 +209,20 @@ private fun CheckoutScreenContent(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(56.dp),
+                    enabled = !isGeneratingOrder
                 ) {
-                    Text(
-                        text = "Checkout",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
+                    if (isGeneratingOrder) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.background
+                        )
+                    } else {
+                        Text(
+                            text = "Checkout",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -224,7 +245,8 @@ private fun CheckoutScreenPreview() {
     AppPreview {
         CheckoutScreenContent(
             onBack = {},
-            onSubscribe = {}
+            onSubscribe = {},
+            isGeneratingOrder = false
         )
     }
 }

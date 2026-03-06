@@ -7,6 +7,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.common.removeLastIfMultiple
 import com.simple.doozy.feature.onboarding.OnboardingScreen
 import com.simple.doozy.feature.onboarding.OnboardingViewModel
 import com.simple.doozy.navigation.route.Route.AuthenticatedNav.Onboarding
@@ -23,7 +24,7 @@ fun OnboardingNav(modifier: Modifier) {
             rememberViewModelStoreNavEntryDecorator()
         ),
         backStack = backstack,
-        onBack = { backstack.removeLastOrNull() },
+        onBack = { backstack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<Onboarding> { route ->
                 val viewModel = koinViewModel<OnboardingViewModel>()

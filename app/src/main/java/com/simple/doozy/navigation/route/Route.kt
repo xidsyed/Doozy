@@ -56,6 +56,12 @@ sealed interface Route : NavKey {
                 @Serializable
                 data object EditProfile : Route
 
+                @Serializable
+                data object AccountPrivacy : Route
+
+                @Serializable
+                data object Support : Route
+
             }
         }
 
@@ -65,6 +71,9 @@ sealed interface Route : NavKey {
 
             @Serializable
             data object Checkout : Route
+
+            @Serializable
+            data class Payment(val orderId: String) : Route
 
         }
 

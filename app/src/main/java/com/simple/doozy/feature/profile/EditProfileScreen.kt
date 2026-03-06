@@ -175,7 +175,7 @@ private fun EditProfileScreenContent(
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     OutlinedTextField(
-                        value = state.genderInput ?: "Prefer not to say",
+                        value = state.genderInput,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Gender") },
