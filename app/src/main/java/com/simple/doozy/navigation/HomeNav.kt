@@ -26,6 +26,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.common.removeLastIfMultiple
 import com.simple.doozy.feature.profile.AccountPrivacyScreen
 import com.simple.doozy.feature.profile.AccountPrivacyViewModel
 import com.simple.doozy.feature.profile.EditProfileScreen
@@ -128,7 +129,7 @@ fun SettingsNav(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        onBack = { backStack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<HomeNav.ProfileTab.Profile> {
                 val profileViewModel = koinViewModel<ProfileViewModel>()
@@ -147,7 +148,7 @@ fun SettingsNav(
                 EditProfileScreen(
                     modifier = modifier,
                     viewModel = editProfileViewModel,
-                    onNavigateBack = { backStack.removeLastOrNull() }
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
                 )
             }
             entry<HomeNav.ProfileTab.AccountPrivacy> {
@@ -155,7 +156,7 @@ fun SettingsNav(
                 AccountPrivacyScreen(
                     modifier = modifier,
                     viewModel = accountPrivacyViewModel,
-                    onNavigateBack = { backStack.removeLastOrNull() }
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
                 )
             }
             entry<HomeNav.ProfileTab.Support> {
@@ -163,7 +164,7 @@ fun SettingsNav(
                 SupportScreen(
                     modifier = modifier,
                     viewModel = supportViewModel,
-                    onNavigateBack = { backStack.removeLastOrNull() }
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
                 )
             }
         }
@@ -186,7 +187,7 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSu
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
+        onBack = { backStack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<HomeNav.TodosTab.TodosList> {
                 val todosListViewModel = koinViewModel<TodosListViewModel>()
@@ -211,7 +212,7 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSu
                 TodoDetailsScreen(
                     modifier = modifier,
                     viewModel = todoDetailViewModel,
-                    navigateUp = { backStack.removeLastOrNull() }
+                    navigateUp = { backStack.removeLastIfMultiple() }
                 )
             }
 

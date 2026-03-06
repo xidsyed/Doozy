@@ -9,6 +9,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.common.removeLastIfMultiple
 import com.simple.doozy.feature.auth.screens.LoginScreen
 import com.simple.doozy.feature.auth.screens.LoginViewModel
 import com.simple.doozy.feature.auth.screens.OtpScreen
@@ -27,7 +28,7 @@ fun UnauthenticatedNav(modifier: Modifier) {
             rememberViewModelStoreNavEntryDecorator()
         ),
         backStack = backstack,
-        onBack = { backstack.removeLastOrNull() },
+        onBack = { backstack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<UnauthenticatedNav.Authentication.Login> {
                 val viewModel = koinViewModel<LoginViewModel>()
@@ -62,7 +63,7 @@ fun UnauthenticatedNav(modifier: Modifier) {
                     verify = viewModel::verifyOtp,
                     resend = { viewModel.resendOtp(activity) },
                     onOtpChange = viewModel::updateOtp,
-                    onBack = { backstack.removeLastOrNull() }
+                    onBack = { backstack.removeLastIfMultiple() }
                 )
             }
         }

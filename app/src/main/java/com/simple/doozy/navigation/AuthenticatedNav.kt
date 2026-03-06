@@ -11,6 +11,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.common.removeLastIfMultiple
 import com.simple.doozy.feature.subscription.checkout.CheckoutScreen
 import com.simple.doozy.feature.subscription.checkout.PaymentScreen
 import com.simple.doozy.feature.subscription.checkout.PaymentViewModel
@@ -29,7 +30,7 @@ fun AuthenticatedNav(modifier: Modifier) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { if (backstack.size > 1) backstack.removeLastOrNull() },
+        onBack = { backstack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<AuthenticatedNav.HomeNav> {
                 HomeNav(
@@ -42,7 +43,7 @@ fun AuthenticatedNav(modifier: Modifier) {
             entry<AuthenticatedNav.SubscribeNav.Checkout> {
                 CheckoutScreen(
                     modifier = modifier,
-                    onBack = { backstack.removeLastOrNull() },
+                    onBack = { backstack.removeLastIfMultiple() },
                     onNavigateToPayment = { orderId ->
                         backstack.add(AuthenticatedNav.SubscribeNav.Payment(orderId))
                     }
@@ -55,12 +56,12 @@ fun AuthenticatedNav(modifier: Modifier) {
                     orderId = route.orderId,
                     viewModel = paymentViewModel,
                     onNavigateSuccess = {
-                        backstack.removeLastOrNull() // Remove payment
-                        backstack.removeLastOrNull() // Remove checkout
+                        backstack.removeLastIfMultiple() // Remove payment
+                        backstack.removeLastIfMultiple() // Remove checkout
                         backstack.add(AuthenticatedNav.SubscriptionStatus)
                     },
                     onNavigateFailure = {
-                        backstack.removeLastOrNull() // Go back to Checkout
+                        backstack.removeLastIfMultiple() // Go back to Checkout
                     },
                     modifier = modifier
                 )

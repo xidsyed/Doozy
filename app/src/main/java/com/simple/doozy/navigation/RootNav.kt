@@ -13,6 +13,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.simple.doozy.MainViewModel
+import com.simple.doozy.common.removeLastIfMultiple
 import com.simple.doozy.feature.session.SessionState
 import com.simple.doozy.navigation.route.Route
 import org.koin.compose.viewmodel.koinViewModel
@@ -38,7 +39,7 @@ fun RootNav(modifier: Modifier) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { if (backstack.size > 1) backstack.removeLastOrNull() },
+        onBack = { backstack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<Route.AuthenticatedNav> {
                 AuthenticatedNav(modifier)
