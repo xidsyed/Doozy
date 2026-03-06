@@ -12,8 +12,11 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.simple.doozy.feature.subscription.checkout.CheckoutScreen
+import com.simple.doozy.feature.subscription.checkout.PaymentScreen
+import com.simple.doozy.feature.subscription.checkout.PaymentViewModel
 import com.simple.doozy.feature.subscription.status.SubscriptionStatusScreen
 import com.simple.doozy.navigation.route.Route.AuthenticatedNav
+import org.koin.compose.viewmodel.koinViewModel
 
 
 @Composable
@@ -26,7 +29,7 @@ fun AuthenticatedNav(modifier: Modifier) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backstack.removeLastOrNull() },
+        onBack = { if (backstack.size > 1) backstack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<AuthenticatedNav.HomeNav> {
                 HomeNav(
@@ -40,10 +43,26 @@ fun AuthenticatedNav(modifier: Modifier) {
                 CheckoutScreen(
                     modifier = modifier,
                     onBack = { backstack.removeLastOrNull() },
-                    onSubscribe = {
-                        backstack.removeLastOrNull() // Remove checkout from backstack
-                        backstack.add(AuthenticatedNav.SubscriptionStatus)
+                    onNavigateToPayment = { orderId ->
+                        backstack.add(AuthenticatedNav.SubscribeNav.Payment(orderId))
                     }
+                )
+            }
+
+            entry<AuthenticatedNav.SubscribeNav.Payment> { route ->
+                val paymentViewModel = koinViewModel<PaymentViewModel>()
+                PaymentScreen(
+                    orderId = route.orderId,
+                    viewModel = paymentViewModel,
+                    onNavigateSuccess = {
+                        backstack.removeLastOrNull() // Remove payment
+                        backstack.removeLastOrNull() // Remove checkout
+                        backstack.add(AuthenticatedNav.SubscriptionStatus)
+                    },
+                    onNavigateFailure = {
+                        backstack.removeLastOrNull() // Go back to Checkout
+                    },
+                    modifier = modifier
                 )
             }
 

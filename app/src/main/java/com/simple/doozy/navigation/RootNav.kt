@@ -21,6 +21,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun RootNav(modifier: Modifier) {
     val viewModel = koinViewModel<MainViewModel>()
     val sessionState by viewModel.sessionState.collectAsStateWithLifecycle()
+    if (sessionState is SessionState.Checking) return
     val rootDestination by remember { derivedStateOf { if (sessionState is SessionState.Unauthenticated) Route.UnauthenticatedNav else Route.AuthenticatedNav } }
     val backstack = rememberNavBackStack(rootDestination)
 
@@ -37,7 +38,7 @@ fun RootNav(modifier: Modifier) {
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backstack.removeLastOrNull() },
+        onBack = { if (backstack.size > 1) backstack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<Route.AuthenticatedNav> {
                 AuthenticatedNav(modifier)

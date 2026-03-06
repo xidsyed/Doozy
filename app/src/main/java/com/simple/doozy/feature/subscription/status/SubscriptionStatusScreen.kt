@@ -1,5 +1,11 @@
 package com.simple.doozy.feature.subscription.status
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,39 +31,75 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.common.ui.util.AppPreview
 import com.simple.doozy.ui.theme.ScreenPaddingValues
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SubscriptionStatusScreen(
     onReturnHome: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: SubscriptionStatusViewModel = koinViewModel()
 ) {
+    var showCancelDialog by remember { mutableStateOf(false) }
+    val isCancelling by viewModel.isCancelling.collectAsStateWithLifecycle()
+
     SubscriptionStatusScreenContent(
         onReturnHome = onReturnHome,
+        onCancelSubscriptionClick = { showCancelDialog = true },
         modifier = modifier
     )
+
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!isCancelling) showCancelDialog = false },
+            title = { Text("Cancel Subscription") },
+            text = { Text("Are you sure you want to cancel your Doozy Premium subscription? You will lose access to all premium features at the end of your billing cycle.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.cancelSubscription(
+                            onCancelled = {
+                                showCancelDialog = false
+                                onReturnHome()
+                            }
+                        )
+                    },
+                    enabled = !isCancelling
+                ) {
+                    Text(if (isCancelling) "Cancelling..." else "Yes, Cancel")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCancelDialog = false },
+                    enabled = !isCancelling
+                ) {
+                    Text("No, Keep It")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 private fun SubscriptionStatusScreenContent(
     onReturnHome: () -> Unit,
+    onCancelSubscriptionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -182,7 +225,7 @@ private fun SubscriptionStatusScreenContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = { /* Handle cancel */ }) {
+            TextButton(onClick = onCancelSubscriptionClick) {
                 Text(
                     text = "Cancel Subscription",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
@@ -223,7 +266,8 @@ private fun InvoiceRow(title: String, value: String, isLast: Boolean = false) {
 private fun SubscriptionStatusScreenPreview() {
     AppPreview {
         SubscriptionStatusScreenContent(
-            onReturnHome = {}
+            onReturnHome = {},
+            onCancelSubscriptionClick = {}
         )
     }
 }

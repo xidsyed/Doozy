@@ -16,7 +16,7 @@ class MainViewModel(
 
     init {
         viewModelScope.launch {
-            authRepository.initialize()
+            // Initialization is now handled by the callbackFlow when state is collected
         }
     }
 

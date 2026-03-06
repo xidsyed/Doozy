@@ -128,7 +128,7 @@ fun SettingsNav(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<HomeNav.ProfileTab.Profile> {
                 val profileViewModel = koinViewModel<ProfileViewModel>()
@@ -186,7 +186,7 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSu
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
         entryProvider = entryProvider {
             entry<HomeNav.TodosTab.TodosList> {
                 val todosListViewModel = koinViewModel<TodosListViewModel>()

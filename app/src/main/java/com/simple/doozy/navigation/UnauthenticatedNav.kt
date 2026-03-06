@@ -47,8 +47,12 @@ fun UnauthenticatedNav(modifier: Modifier) {
                 val viewModel = koinViewModel<OtpViewModel>()
                 val state by viewModel.state.collectAsStateWithLifecycle()
 
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val activity = context as? android.app.Activity
+                    ?: throw IllegalStateException("LocalContext is not an Activity")
+
                 androidx.compose.runtime.LaunchedEffect(it.phoneNumber) {
-                    viewModel.initPhoneNumber(it.phoneNumber)
+                    viewModel.initPhoneNumber(it.phoneNumber, activity)
                 }
 
                 OtpScreen(
@@ -56,7 +60,7 @@ fun UnauthenticatedNav(modifier: Modifier) {
                     state = state,
                     phoneNumber = it.phoneNumber,
                     verify = viewModel::verifyOtp,
-                    resend = viewModel::resendOtp,
+                    resend = { viewModel.resendOtp(activity) },
                     onOtpChange = viewModel::updateOtp,
                     onBack = { backstack.removeLastOrNull() }
                 )
