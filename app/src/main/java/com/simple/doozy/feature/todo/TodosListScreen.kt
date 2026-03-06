@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,15 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simple.doozy.R
+import com.simple.doozy.feature.subscription.paywall.PaywallBottomSheet
 import com.simple.doozy.feature.todo.data.Todo
 import com.simple.doozy.ui.theme.PremiumGold
 import com.simple.doozy.ui.theme.ScreenPaddingValues
-import com.simple.doozy.feature.subscription.paywall.PaywallBottomSheet
 
 @Composable
 fun TodosListScreen(
@@ -49,9 +48,19 @@ fun TodosListScreen(
     navigateToCheckout: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isSubscribed by viewModel.isSubscribed.collectAsStateWithLifecycle()
 
     var activeFilter by remember { mutableStateOf("All") }
     var showPaywall by remember { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(viewModel.uiEvent) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is TodosUiEvent.ShowPaywall -> showPaywall = true
+                is TodosUiEvent.NavigateToDetail -> navigateToTodoDetail(null)
+            }
+        }
+    }
 
     val filteredTodos = remember(state.todos, activeFilter) {
         when (activeFilter) {
@@ -77,7 +86,7 @@ fun TodosListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navigateToTodoDetail(null)
+                    viewModel.onEvent(TodosEvent.OnAddTodoClick)
                 },
                 shape = CircleShape,
                 containerColor = MaterialTheme.colorScheme.onSurface,
@@ -107,28 +116,30 @@ fun TodosListScreen(
                     )
                 )
 
-                // Premium Badge
-                Surface(
-                    shape = CircleShape,
-                    color = PremiumGold,
-                    contentColor = MaterialTheme.colorScheme.surface
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .clickable { showPaywall = true }
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                if (!isSubscribed) {
+                    // Premium Badge
+                    Surface(
+                        shape = CircleShape,
+                        color = PremiumGold,
+                        contentColor = MaterialTheme.colorScheme.surface
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_premium_diamond),
-                            contentDescription = "Premium",
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Get Premium",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Row(
+                            modifier = Modifier
+                                .clickable { showPaywall = true }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_premium_diamond),
+                                contentDescription = "Premium",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Get Premium",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }

@@ -26,10 +26,15 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.simple.doozy.common.removeLastIfMultiple
+import com.simple.doozy.feature.profile.AccountPrivacyScreen
+import com.simple.doozy.feature.profile.AccountPrivacyViewModel
 import com.simple.doozy.feature.profile.EditProfileScreen
 import com.simple.doozy.feature.profile.EditProfileViewModel
 import com.simple.doozy.feature.profile.ProfileScreen
 import com.simple.doozy.feature.profile.ProfileViewModel
+import com.simple.doozy.feature.profile.SupportScreen
+import com.simple.doozy.feature.profile.SupportViewModel
 import com.simple.doozy.feature.todo.TodosListScreen
 import com.simple.doozy.feature.todo.TodosListViewModel
 import com.simple.doozy.feature.todo.detail.TodoDetailsScreen
@@ -124,7 +129,7 @@ fun SettingsNav(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { backStack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<HomeNav.ProfileTab.Profile> {
                 val profileViewModel = koinViewModel<ProfileViewModel>()
@@ -133,7 +138,9 @@ fun SettingsNav(
                     viewModel = profileViewModel,
                     onNavigateToEditProfile = { backStack.add(HomeNav.ProfileTab.EditProfile) },
                     onNavigateToSubscribeFlow = onNavigateToSubscribeFlow,
-                    onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage
+                    onNavigateToActiveSubscriptionPage = onNavigateToActiveSubscriptionPage,
+                    onNavigateToAccountPrivacy = { backStack.add(HomeNav.ProfileTab.AccountPrivacy) },
+                    onNavigateToSupport = { backStack.add(HomeNav.ProfileTab.Support) }
                 )
             }
             entry<HomeNav.ProfileTab.EditProfile> {
@@ -141,7 +148,23 @@ fun SettingsNav(
                 EditProfileScreen(
                     modifier = modifier,
                     viewModel = editProfileViewModel,
-                    onNavigateBack = { backStack.removeLastOrNull() }
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
+                )
+            }
+            entry<HomeNav.ProfileTab.AccountPrivacy> {
+                val accountPrivacyViewModel = koinViewModel<AccountPrivacyViewModel>()
+                AccountPrivacyScreen(
+                    modifier = modifier,
+                    viewModel = accountPrivacyViewModel,
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
+                )
+            }
+            entry<HomeNav.ProfileTab.Support> {
+                val supportViewModel = koinViewModel<SupportViewModel>()
+                SupportScreen(
+                    modifier = modifier,
+                    viewModel = supportViewModel,
+                    onNavigateBack = { backStack.removeLastIfMultiple() }
                 )
             }
         }
@@ -164,7 +187,7 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSu
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        onBack = { backStack.removeLastOrNull() },
+        onBack = { backStack.removeLastIfMultiple() },
         entryProvider = entryProvider {
             entry<HomeNav.TodosTab.TodosList> {
                 val todosListViewModel = koinViewModel<TodosListViewModel>()
@@ -189,7 +212,7 @@ fun TodoNav(modifier: Modifier, showBottomBar: (Boolean) -> Unit, onNavigateToSu
                 TodoDetailsScreen(
                     modifier = modifier,
                     viewModel = todoDetailViewModel,
-                    navigateUp = { backStack.removeLastOrNull() }
+                    navigateUp = { backStack.removeLastIfMultiple() }
                 )
             }
 

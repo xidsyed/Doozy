@@ -1,10 +1,12 @@
 package com.simple.doozy.feature.auth.screens
 
+import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
+import com.simple.doozy.feature.auth.data.AuthError
 import com.simple.doozy.feature.auth.data.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,10 +35,10 @@ class OtpViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun initPhoneNumber(phone: String) {
+    fun initPhoneNumber(phone: String, activity: Activity) {
         if (phoneNumber.isEmpty()) {
             phoneNumber = phone
-            sendOtp()
+            sendOtp(activity)
         }
     }
 
@@ -46,31 +48,23 @@ class OtpViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    private fun sendOtp() {
+    private fun sendOtp(activity: Activity) {
         viewModelScope.launch {
             _state.update { it.copy(isSendingCode = true, error = null) }
-            authRepository.sendOtp(phoneNumber)
+            authRepository.sendOtp("+91$phoneNumber", activity)
                 .onSuccess {
                     _state.update { it.copy(isSendingCode = false) }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(isSendingCode = false, error = err.message ?: "Failed to send code") }
+                    Log.d("TAG", err.message)
+                    _state.update { it.copy(isSendingCode = false, error = mapErrorToString(err)) }
                 }
         }
     }
 
-    fun resendOtp() {
+    fun resendOtp(activity: Activity) {
         if (_state.value.resendCountdown == 0) {
-            viewModelScope.launch {
-                _state.update { it.copy(isSendingCode = true, error = null) }
-                authRepository.resendOtp()
-                    .onSuccess {
-                        _state.update { it.copy(isSendingCode = false) }
-                    }
-                    .onFailure { err ->
-                        _state.update { it.copy(isSendingCode = false, error = err.message ?: "Failed to resend code") }
-                    }
-            }
+            sendOtp(activity)
         }
     }
 
@@ -83,9 +77,21 @@ class OtpViewModel(private val authRepository: AuthRepository) : ViewModel() {
                         _state.update { it.copy(isLoading = false, error = null) }
                     }
                     .onFailure { err ->
-                        _state.update { it.copy(isLoading = false, error = err.message ?: "Verification failed") }
+                        _state.update { it.copy(isLoading = false, error = mapErrorToString(err)) }
                     }
             }
+        }
+    }
+
+    private fun mapErrorToString(error: AuthError): String {
+        return when (error) {
+            is AuthError.InvalidOtp -> "Incorrect code entered. Please try again."
+            is AuthError.InvalidPhoneNumber -> "The format of the phone number provided is incorrect."
+            is AuthError.TooManyRequests -> "Too many attempts. Please try again later."
+            is AuthError.Timeout -> "Verification timed out. Please request a new code."
+            is AuthError.NetworkError -> "No internet connection. Check your network."
+            is AuthError.CodeSentFailed -> "Failed to send code. Please try again."
+            is AuthError.Unknown -> if (error.message.isNotBlank()) error.message else "An unexpected error occurred. Please try again."
         }
     }
 

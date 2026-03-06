@@ -41,7 +41,7 @@ class DefaultUserRepository(
             throw IllegalStateException("No auth token available")
         }
         // Mocking successful creation
-        val newUser = User(id = User.Id(userId))
+        val newUser = User(id = userId)
         _state.update { UserState.Registered(newUser) }
     }
 

@@ -28,6 +28,7 @@ interface SubscriptionRepository {
     suspend fun getAvailableSubscriptions(): Result<List<SubscriptionPlan>, Exception>
     suspend fun createOrderToBuySubscription(planId: String): Result<String, Exception> // Return sthe orderId
     suspend fun cancelActiveSubscription(): Result<Unit, Exception>
+    suspend fun activateSubscription(): Result<Unit, Exception>
 }
 
 class DefaultSubscriptionRepository : SubscriptionRepository {
@@ -58,6 +59,17 @@ class DefaultSubscriptionRepository : SubscriptionRepository {
     override suspend fun cancelActiveSubscription(): Result<Unit, Exception> {
         delay(1000)
         _subscriptionState.value = SubscriptionState.NoSubscription
+        return Ok(Unit)
+    }
+
+    override suspend fun activateSubscription(): Result<Unit, Exception> {
+        // Mock a successful activation
+        _subscriptionState.value = SubscriptionState.Subscribed(
+            plan = mockPlan,
+            subscribedOn = "Today",
+            billingDate = "Next Month",
+            expiresOn = "Next Month"
+        )
         return Ok(Unit)
     }
 }
