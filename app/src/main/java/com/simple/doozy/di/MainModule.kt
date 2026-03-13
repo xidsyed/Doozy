@@ -25,7 +25,7 @@ val mainModule = module {
         application.applicationScope
     }
     single<DataStore<Preferences>> { androidContext().appDataStore }
-    single<UserRepository> { DefaultUserRepository(get()) }
+    single<UserRepository> { DefaultUserRepository(get(), get()) }
     single<SessionManager> { SessionManager(get(), get(), get(), get()) }
     single<SnackbarController>()
     viewModel<MainViewModel>()

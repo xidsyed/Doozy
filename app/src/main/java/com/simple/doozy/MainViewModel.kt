@@ -1,5 +1,6 @@
 package com.simple.doozy
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.auth.data.AuthRepository
@@ -29,7 +30,9 @@ class MainViewModel(
 
     init {
         viewModelScope.launch {
-//            authManager.login()
+            sessionState.collect{
+                Log.d("TAG", it.toString())
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ import org.koin.dsl.module
 import org.koin.plugin.module.dsl.viewModel
 
 val profileModule = module {
-    single<SubscriptionRepository> { DefaultSubscriptionRepository() }
+    single<SubscriptionRepository> { DefaultSubscriptionRepository(get(), get()) }
     single<PaymentRepository> { DefaultPaymentRepository(get()) }
 
     factoryOf(::DeleteAccountUseCase)

@@ -27,7 +27,7 @@ class CheckoutViewModel(
                 }
                 .onFailure {
                     _isGeneratingOrder.value = false
-                    onError(it.message ?: "Failed to generate order ID")
+                    onError(it.toString())
                 }
         }
     }
