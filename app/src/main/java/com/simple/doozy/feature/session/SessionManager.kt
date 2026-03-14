@@ -22,7 +22,7 @@ class SessionManager(
     val sessionState: StateFlow<SessionState> = combine(
         authRepository.state,
         userRepository.state,
-        subscriptionRepository.fetchUserSubscription()
+        subscriptionRepository.state
     ) { authState, userState, subscriptionState ->
         when (authState) {
             is AuthState.Checking -> SessionState.Checking

@@ -1,9 +1,6 @@
 package com.simple.doozy.feature.subscription.data
 
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -17,28 +14,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class SubscriptionPlan(val id: String, val name: String, val price: String)
-
-sealed interface SubscriptionState {
-    data object Checking : SubscriptionState
-    data object NoSubscription : SubscriptionState
-    data class Subscribed(
-        val plan: SubscriptionPlan,
-        val subscribedOn: String,
-        val billingDate: String,
-        val expiresOn: String
-    ) : SubscriptionState
-}
-
 interface SubscriptionRepository {
-    fun fetchUserSubscription(): Flow<SubscriptionState>
+    val state: StateFlow<SubscriptionRepositoryState>
     suspend fun getAvailableSubscriptions(): Result<List<SubscriptionPlan>, AppError>
     suspend fun createOrderToBuySubscription(planId: String): Result<String, AppError> // Returns the orderId
     suspend fun activateSubscription(): Result<Unit, AppError>
@@ -48,35 +35,27 @@ interface SubscriptionRepository {
 @OptIn(ExperimentalCoroutinesApi::class)
 class DefaultSubscriptionRepository(
     private val authRepository: AuthRepository,
-    private val dataStore: DataStore<Preferences>
+    private val subscriptionDataStore: DataStore<SubscriptionData>
 ) : SubscriptionRepository {
-    private val mockPlan = SubscriptionPlan("pro_monthly", "Pro Monthly", "$9.99/mo")
+    private val mockPlan = SubscriptionData.Active.MOCK.plan
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    // Simulate real-time backend stream (e.g. from RevenueCat webhooks updating ConvexDB)
-    private val remoteState: Flow<Result<SubscriptionState, AppError>> = authRepository.state.flatMapLatest { authState ->
+    private val _state = MutableStateFlow(SubscriptionRepositoryState(SyncStatus.Idle(System.currentTimeMillis()), null))
+    override val state: StateFlow<SubscriptionRepositoryState> = _state.asStateFlow()
+
+    // Simulate real-time backend stream
+    private val remoteState: Flow<Result<SubscriptionData, AppError>> = authRepository.state.flatMapLatest { authState ->
         when (authState) {
             is AuthState.Authenticated -> {
                 flow {
                     // Mock remote fetch
                     delay(500)
-                    
-                    val prefs = dataStore.data.first()
-                    val existingPlanId = prefs[KEY_SUBSCRIPTION_PLAN_ID]
-                    
-                    if (existingPlanId != null) {
-                        emit(Ok(SubscriptionState.Subscribed(
-                            plan = if (existingPlanId == mockPlan.id) mockPlan else SubscriptionPlan(
-                                existingPlanId,
-                                "Unknown Plan",
-                                ""
-                            ),
-                            subscribedOn = "Cached",
-                            billingDate = "Cached",
-                            expiresOn = "Cached"
-                        )))
+                    val currentData = subscriptionDataStore.data.first()
+                    // Re-emit existing plan if there is one, keeping existing data mock backend keeping state
+                    if (currentData is SubscriptionData.Active) {
+                        emit(Ok(currentData))
                     } else {
-                        emit(Ok(SubscriptionState.NoSubscription))
+                        emit(Ok(SubscriptionData.NoSubscription(System.currentTimeMillis())))
                     }
                 }
             }
@@ -84,65 +63,30 @@ class DefaultSubscriptionRepository(
         }
     }
 
-    companion object {
-        val KEY_SUBSCRIPTION_PLAN_ID = stringPreferencesKey("subscription_plan_id")
-    }
-
     init {
+        // Collect from the DataStore and instantly update our local state `data` property.
+        scope.launch {
+            subscriptionDataStore.data.collect { storedData ->
+                _state.update { it.copy(data = storedData) }
+            }
+        }
+
         // Collect from the remote stream and persist it to DataStore.
         scope.launch {
             remoteState.collect { result ->
-                result.onSuccess { state ->
-                    when (state) {
-                        is SubscriptionState.Subscribed -> {
-                            dataStore.edit { prefs ->
-                                prefs[KEY_SUBSCRIPTION_PLAN_ID] = state.plan.id
-                            }
-                        }
-                        is SubscriptionState.NoSubscription -> {
-                            dataStore.edit { prefs ->
-                                prefs.remove(KEY_SUBSCRIPTION_PLAN_ID)
-                            }
-                        }
-                        else -> {}
-                    }
+                result.onSuccess { data: SubscriptionData ->
+                    subscriptionDataStore.updateData { data }
+                    _state.update { it.copy(syncStatus = SyncStatus.Idle(data.lastSyncTimestamp)) }
                 }.onFailure { error ->
-                    when (error) {
-                        is AppError.Network -> {
-                            // Ignore network errors, let local-first cache serve the UI
-                        }
-                        else -> {}
-                    }
+                    _state.update { it.copy(syncStatus = SyncStatus.Error("Failed to sync remote state: $error")) }
                 }
-            }
-        }
-    }
-
-    override fun fetchUserSubscription(): Flow<SubscriptionState> {
-        // Instantly emit whatever is in the local DataStore cache.
-        return dataStore.data.map { prefs ->
-            val planId = prefs[KEY_SUBSCRIPTION_PLAN_ID]
-            if (planId != null) {
-                // For demonstration, map the string back to the mock plan
-                SubscriptionState.Subscribed(
-                    plan = if (planId == mockPlan.id) mockPlan else SubscriptionPlan(
-                        planId,
-                        "Unknown Plan",
-                        ""
-                    ),
-                    subscribedOn = "Cached",
-                    billingDate = "Cached",
-                    expiresOn = "Cached"
-                )
-            } else {
-                SubscriptionState.NoSubscription
             }
         }
     }
 
     override suspend fun getAvailableSubscriptions(): Result<List<SubscriptionPlan>, AppError> {
         delay(1000)
-        return Ok(listOf(mockPlan, SubscriptionPlan("pro_yearly", "Pro Yearly", "$99.99/yr")))
+        return Ok(listOf(mockPlan, SubscriptionPlan("pro_yearly", "Pro Yearly", 9999)))
     }
 
     override suspend fun createOrderToBuySubscription(planId: String): Result<String, AppError> {
@@ -152,30 +96,36 @@ class DefaultSubscriptionRepository(
 
     override suspend fun cancelActiveSubscription(): Result<Unit, AppError> {
         return try {
-            // Mock network request Call to backend
+            _state.update { it.copy(syncStatus = SyncStatus.Loading) }
+            // Mock network call to backend
             delay(1000)
             
             // Backend successfully cancelled, update local datastore immediately
-            dataStore.edit { prefs ->
-                prefs.remove(KEY_SUBSCRIPTION_PLAN_ID)
-            }
+            val timestamp = java.lang.System.currentTimeMillis()
+            subscriptionDataStore.updateData { SubscriptionData.NoSubscription(timestamp) }
+            _state.update { it.copy(syncStatus = SyncStatus.Idle(timestamp)) }
             Ok(Unit)
         } catch (e: Exception) {
+            _state.update { it.copy(syncStatus = SyncStatus.Error("Network error")) }
             Err(AppError.Network)
         }
     }
 
     override suspend fun activateSubscription(): Result<Unit, AppError> {
         return try {
+            _state.update { it.copy(syncStatus = SyncStatus.Loading) }
             // Mock network request to backend
             delay(500)
             
             // Backend successfully activated, update local datastore immediately
-            dataStore.edit { prefs ->
-                prefs[KEY_SUBSCRIPTION_PLAN_ID] = mockPlan.id
+            val timestamp = System.currentTimeMillis()
+            subscriptionDataStore.updateData { 
+                SubscriptionData.Active.MOCK.copy(lastSyncTimestamp = timestamp)
             }
+            _state.update { it.copy(syncStatus = SyncStatus.Idle(timestamp)) }
             Ok(Unit)
         } catch (e: Exception) {
+            _state.update { it.copy(syncStatus = SyncStatus.Error("Network error: ${e.message}")) }
             Err(AppError.Network)
         }
     }

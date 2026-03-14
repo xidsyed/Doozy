@@ -91,7 +91,8 @@ dependencies {
     implementation(libs.androidx.work.runtime)
 
     // DataStore (Preferences)
-    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore.preferences) // for the preferences map-like API
+    implementation(libs.androidx.datastore)
 
     // Fragments (if mixing fragment + compose or hybrid app)
     implementation(libs.androidx.fragment.ktx)
@@ -112,6 +113,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.kotlinx.coroutines.play.services)
+
+    // Date Time
+    implementation(libs.kotlinx.datetime)
 
 
 

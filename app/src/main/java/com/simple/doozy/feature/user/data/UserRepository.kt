@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 
 interface UserRepository {
     val state: Flow<UserState>
-    suspend fun createNewUser(userId: String): Result<Unit, AppError>
+    suspend fun createUser(userId: String): Result<Unit, AppError>
     suspend fun updateUser(user: User): Result<Unit, AppError>
 }
 
@@ -129,7 +129,7 @@ class DefaultUserRepository(
         }
     }
 
-    override suspend fun createNewUser(userId: String): Result<Unit, AppError> {
+    override suspend fun createUser(userId: String): Result<Unit, AppError> {
         val token = authRepository.getCurrentToken()
         if (token == null) {
             return Err(AppError.Unknown(IllegalStateException("No auth token available")))

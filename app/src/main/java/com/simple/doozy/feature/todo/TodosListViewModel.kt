@@ -3,7 +3,6 @@ package com.simple.doozy.feature.todo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
-import com.simple.doozy.feature.subscription.data.SubscriptionState
 import com.simple.doozy.feature.todo.data.TodoRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -21,8 +20,8 @@ class TodosListViewModel(
         TodosState(it)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(3000), TodosState(emptyList()))
 
-    val isSubscribed = subscriptionRepository.fetchUserSubscription()
-        .map { it is SubscriptionState.Subscribed }
+    val isSubscribed = subscriptionRepository.state
+        .map { it.data is com.simple.doozy.feature.subscription.data.SubscriptionData.Active }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(3000), false)
 
     private val _uiEvent = MutableSharedFlow<TodosUiEvent>()

@@ -25,7 +25,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
-import com.simple.doozy.feature.subscription.data.SubscriptionState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,7 +54,7 @@ class PaymentViewModel(
         viewModelScope.launch {
             combine(
                 paymentRepository.paymentState,
-                subscriptionRepository.fetchUserSubscription()
+                subscriptionRepository.state
             ) { checkoutState, subscriptionState ->
                 Pair(checkoutState, subscriptionState)
             }.collect { (checkoutState, subscriptionState) ->
@@ -89,7 +88,7 @@ class PaymentViewModel(
                     }
 
                     is PaymentState.Success -> {
-                        if (subscriptionState is SubscriptionState.Subscribed) {
+                        if (subscriptionState.data is com.simple.doozy.feature.subscription.data.SubscriptionData.Active) {
                             _uiState.value = PaymentUiState(
                                 title = "Success!",
                                 description = "Subscription activated.",
