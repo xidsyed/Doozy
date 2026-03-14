@@ -11,6 +11,7 @@ import com.simple.doozy.core.error.AppError
 import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.data.AuthRepository
 import com.simple.doozy.feature.auth.model.User
+import com.simple.doozy.feature.session.UserSessionClearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,7 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-interface UserRepository {
+interface UserRepository : UserSessionClearable {
     val state: StateFlow<UserRepositoryState>
     suspend fun createUser(userId: String): Result<Unit, AppError>
     suspend fun updateUser(user: User): Result<Unit, AppError>
@@ -147,5 +148,10 @@ class DefaultUserRepository(
              _state.update { it.copy(syncStatus = SyncStatus.Error("Network Error")) }
             Err(AppError.Network)
         }
+    }
+
+    override suspend fun clearSessionData() {
+        dataStore.updateData { null }
+        _state.update { it.copy(syncStatus = SyncStatus.Idle(System.currentTimeMillis())) }
     }
 }

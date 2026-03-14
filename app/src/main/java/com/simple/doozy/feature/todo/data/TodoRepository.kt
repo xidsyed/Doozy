@@ -1,12 +1,12 @@
 package com.simple.doozy.feature.todo.data
 
+import com.simple.doozy.feature.session.UserSessionClearable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class TodoRepository {
+class TodoRepository : UserSessionClearable {
     private var _todos = MutableStateFlow(
         listOf(
             Todo("1", "Buy milk", "2% milk", emptyList(), System.currentTimeMillis(), false),
@@ -49,5 +49,9 @@ class TodoRepository {
                 todos + updateTodo
             }
         }
+    }
+
+    override suspend fun clearSessionData() {
+        _todos.update { emptyList() }
     }
 }

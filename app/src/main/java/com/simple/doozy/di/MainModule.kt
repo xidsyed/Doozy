@@ -12,6 +12,7 @@ import com.simple.doozy.feature.auth.di.authModule
 import com.simple.doozy.feature.auth.model.User
 import com.simple.doozy.feature.onboarding.di.onboardingModule
 import com.simple.doozy.feature.session.SessionManager
+import com.simple.doozy.feature.session.UserSessionClearable
 import com.simple.doozy.feature.todo.di.TodoModule
 import com.simple.doozy.feature.user.data.DefaultUserRepository
 import com.simple.doozy.feature.user.data.UserRepository
@@ -19,6 +20,7 @@ import com.simple.doozy.feature.user.data.UserSerializer
 import com.simple.doozy.navigation.HomeViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.single
 import org.koin.plugin.module.dsl.viewModel
@@ -34,7 +36,7 @@ val mainModule = module {
         application.applicationScope
     }
     single<DataStore<Preferences>> { androidContext().appDataStore }
-    single<UserRepository> { DefaultUserRepository(get(), androidContext().userDataStore) }
+    single<UserRepository> { DefaultUserRepository(get(), androidContext().userDataStore) } bind UserSessionClearable::class
     single<SessionManager> { SessionManager(get(), get(), get(), get()) }
     single<SnackbarController>()
     viewModel<MainViewModel>()

@@ -3,7 +3,6 @@ package com.simple.doozy.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simple.doozy.core.data.SyncStatus
-import com.simple.doozy.feature.auth.data.AuthRepository
 import com.simple.doozy.feature.auth.model.User
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
 import com.simple.doozy.feature.subscription.data.SubscriptionRepositoryState
@@ -21,7 +20,7 @@ data class ProfileState(
 )
 
 class ProfileViewModel(
-    private val authRepository: AuthRepository,
+    private val logoutUseCase: LogoutUseCase,
     private val userRepository: UserRepository,
     private val subscriptionRepository: SubscriptionRepository
 ) : ViewModel() {
@@ -45,7 +44,7 @@ class ProfileViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            authRepository.logout()
+            logoutUseCase()
         }
     }
 }

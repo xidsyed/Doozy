@@ -10,6 +10,7 @@ import com.simple.doozy.core.data.SyncStatus
 import com.simple.doozy.core.error.AppError
 import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.data.AuthRepository
+import com.simple.doozy.feature.session.UserSessionClearable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,7 +26,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-interface SubscriptionRepository {
+interface SubscriptionRepository : UserSessionClearable {
     val state: StateFlow<SubscriptionRepositoryState>
     suspend fun getAvailableSubscriptions(): Result<List<SubscriptionPlan>, AppError>
     suspend fun createOrderToBuySubscription(planId: String): Result<String, AppError> // Returns the orderId
@@ -129,5 +130,11 @@ class DefaultSubscriptionRepository(
             _state.update { it.copy(syncStatus = SyncStatus.Error("Network error: ${e.message}")) }
             Err(AppError.Network)
         }
+    }
+
+    override suspend fun clearSessionData() {
+        val timestamp = System.currentTimeMillis()
+        subscriptionDataStore.updateData { SubscriptionData.NoSubscription(timestamp) }
+        _state.update { it.copy(syncStatus = SyncStatus.Idle(timestamp)) }
     }
 }

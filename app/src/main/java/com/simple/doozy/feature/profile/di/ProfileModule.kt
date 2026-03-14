@@ -6,8 +6,10 @@ import androidx.datastore.dataStore
 import com.simple.doozy.feature.profile.AccountPrivacyViewModel
 import com.simple.doozy.feature.profile.DeleteAccountUseCase
 import com.simple.doozy.feature.profile.EditProfileViewModel
+import com.simple.doozy.feature.profile.LogoutUseCase
 import com.simple.doozy.feature.profile.ProfileViewModel
 import com.simple.doozy.feature.profile.SupportViewModel
+import com.simple.doozy.feature.session.UserSessionClearable
 import com.simple.doozy.feature.subscription.checkout.CheckoutViewModel
 import com.simple.doozy.feature.subscription.checkout.DefaultPaymentRepository
 import com.simple.doozy.feature.subscription.checkout.PaymentRepository
@@ -18,7 +20,7 @@ import com.simple.doozy.feature.subscription.data.SubscriptionRepository
 import com.simple.doozy.feature.subscription.data.SubscriptionSerializer
 import com.simple.doozy.feature.subscription.status.SubscriptionStatusViewModel
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.factoryOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.viewModel
 
@@ -28,10 +30,14 @@ val Context.subscriptionDataStore: DataStore<SubscriptionData> by dataStore(
 )
 
 val profileModule = module {
-    single<SubscriptionRepository> { DefaultSubscriptionRepository(get(), androidContext().subscriptionDataStore) }
+    single<SubscriptionRepository> {
+        DefaultSubscriptionRepository(get(), androidContext().subscriptionDataStore)
+    } bind UserSessionClearable::class
+
     single<PaymentRepository> { DefaultPaymentRepository(get()) }
 
-    factoryOf(::DeleteAccountUseCase)
+    factory { DeleteAccountUseCase(get(), get(), getAll()) }
+    factory { LogoutUseCase(get(), getAll()) }
 
     viewModel<ProfileViewModel>()
     viewModel<EditProfileViewModel>()
