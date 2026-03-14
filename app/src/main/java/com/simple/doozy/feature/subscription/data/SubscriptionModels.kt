@@ -1,5 +1,6 @@
 package com.simple.doozy.feature.subscription.data
 
+import com.simple.doozy.core.data.SyncStatus
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -38,11 +39,7 @@ sealed interface SubscriptionData {
     }
 }
 
-sealed interface SyncStatus {
-    data class Idle(val lastSync: Long) : SyncStatus
-    data object Loading : SyncStatus
-    data class Error(val message: String) : SyncStatus
-}
+
 
 data class SubscriptionRepositoryState(
     val syncStatus: SyncStatus = SyncStatus.Idle(0L),

@@ -4,7 +4,6 @@ import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.data.AuthRepository
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
 import com.simple.doozy.feature.user.data.UserRepository
-import com.simple.doozy.feature.user.data.UserState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,9 +27,10 @@ class SessionManager(
             is AuthState.Checking -> SessionState.Checking
             is AuthState.Unauthenticated -> SessionState.Unauthenticated
             is AuthState.Authenticated -> {
-                when (userState) {
-                    is UserState.Registered -> SessionState.Registered(userState.user, subscriptionState)
-                    else -> SessionState.Authenticated(authState.userId) // Includes Checking, NotFound states during the transition
+                if (userState.data != null) {
+                    SessionState.Registered(userState.data, subscriptionState)
+                } else {
+                    SessionState.Authenticated(authState.userId) // Includes Checking, NotFound states during the transition
                 }
             }
         }
@@ -39,4 +39,7 @@ class SessionManager(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = SessionState.Checking
     )
+
+
+
 }

@@ -2,13 +2,12 @@ package com.simple.doozy.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simple.doozy.core.data.SyncStatus
 import com.simple.doozy.feature.auth.data.AuthRepository
 import com.simple.doozy.feature.auth.model.User
 import com.simple.doozy.feature.subscription.data.SubscriptionRepository
 import com.simple.doozy.feature.subscription.data.SubscriptionRepositoryState
-import com.simple.doozy.feature.subscription.data.SyncStatus
 import com.simple.doozy.feature.user.data.UserRepository
-import com.simple.doozy.feature.user.data.UserState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -33,10 +32,7 @@ class ProfileViewModel(
     init {
         viewModelScope.launch {
             userRepository.state.collectLatest { userState ->
-                val user = when (userState) {
-                    is UserState.Registered -> userState.user
-                    else -> null
-                }
+                val user = userState.data
                 _uiState.update { it.copy(user = user, isLoading = false) }
             }
         }

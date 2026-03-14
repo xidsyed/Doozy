@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.simple.doozy.feature.auth.model.User
 import com.simple.doozy.feature.user.data.UserRepository
-import com.simple.doozy.feature.user.data.UserState
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,10 +37,7 @@ class EditProfileViewModel(
     init {
         viewModelScope.launch {
             userRepository.state.collectLatest { userState ->
-                val user = when (userState) {
-                    is UserState.Registered -> userState.user
-                    else -> null
-                }
+                val user = userState.data
 
                 _uiState.update {
                     it.copy(

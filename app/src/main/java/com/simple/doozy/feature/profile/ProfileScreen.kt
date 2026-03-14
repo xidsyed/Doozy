@@ -162,7 +162,7 @@ private fun ProfileScreenContent(
             val syncStatus = state.subscription.syncStatus
             val subData = state.subscription.data
 
-            if (syncStatus is com.simple.doozy.feature.subscription.data.SyncStatus.Loading && subData == null) {
+            if (syncStatus is com.simple.doozy.core.data.SyncStatus.Loading && subData == null) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -441,7 +441,7 @@ private fun ProfileScreenPreview() {
             state = ProfileState(
                 user = User.MOCK,
                 subscription = SubscriptionRepositoryState(
-                    syncStatus = com.simple.doozy.feature.subscription.data.SyncStatus.Idle(0L),
+                    syncStatus = com.simple.doozy.core.data.SyncStatus.Idle(0L),
                     data = com.simple.doozy.feature.subscription.data.SubscriptionData.Active.MOCK
                 ),
                 isLoading = false

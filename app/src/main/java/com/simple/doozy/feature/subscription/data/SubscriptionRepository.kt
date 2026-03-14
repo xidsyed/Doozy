@@ -6,6 +6,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
+import com.simple.doozy.core.data.SyncStatus
 import com.simple.doozy.core.error.AppError
 import com.simple.doozy.feature.auth.AuthState
 import com.simple.doozy.feature.auth.data.AuthRepository
