@@ -117,6 +117,12 @@ dependencies {
     // Date Time
     implementation(libs.kotlinx.datetime)
 
+    // Convex
+    implementation("dev.convex:android-convexmobile:0.8.0@aar") {
+        isTransitive = true
+    }
+
+
 
 
     // testing
